@@ -17,7 +17,7 @@ export default function HomePage() {
       <main id="main-content">
         {/* Stage: the hero is sticky inside this wrapper while About slides
             over it. */}
-        <div className="relative">
+        <div className="stage relative">
           <Hero />
           <About />
         </div>

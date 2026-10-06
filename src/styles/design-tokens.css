@@ -18,6 +18,15 @@
      section is pulled up by exactly this much so the ticker becomes the
      top edge of the next section. */
   --ticker-h: 44px;
+  /* How fast About rises over the pinned hero, as a fraction of scroll speed
+     (1 = moves with the page; lower = slower, longer cover). Everything else
+     in the transition is derived from it. */
+  --rise-speed: 0.55;
+  /* Scroll distance over which the cover plays out. */
+  --rise-distance: calc((100svh - var(--ticker-h)) / var(--rise-speed));
+  /* How far About is held back by the end of it (distance minus the
+     viewport travel it would have had at full speed). */
+  --rise-extra: calc(var(--rise-distance) - (100svh - var(--ticker-h)));
   --site-gutter: clamp(20px, 4vw, 48px);
   --site-max: 1280px;
   --ease-engineered: cubic-bezier(0.16, 1, 0.3, 1);

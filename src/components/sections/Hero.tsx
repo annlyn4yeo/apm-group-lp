@@ -2,9 +2,8 @@
 
 import type { CSSProperties } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useHeroExitProgress } from "@/lib/hooks";
+import { handleSectionLinkClick } from "@/lib/hooks";
 import { Button } from "@/components/ui/Button";
 
 const HEADLINE_LINES = [
@@ -13,39 +12,23 @@ const HEADLINE_LINES = [
   { text: "ONE VISION.", accent: true },
 ] as const;
 
-// The hero is pinned (sticky) while the About section slides up over it, so
-// its own scroll position never changes. These layers are driven by
-// `useHeroExitProgress` instead: 0 at the top of the page, 1 when About's top
-// edge reaches the top of the viewport. Each layer moves at its own rate,
-// which is where the depth comes from.
-const IMAGE_SCALE_END = 1.1; // photograph pushes in slowly
-const CONTENT_EXIT_Y = "-14%"; // copy drifts up far slower than the page
-const DIM_END = 0.6; // ink veil deepens as the section covers it
-
 // Entrance stagger slot, consumed by `.hero-rise` / `.hero-line` in
 // globals.css (delay = slot * 80ms + 80ms).
 const slot = (index: number) => ({ "--i": index }) as CSSProperties;
 
 export function Hero() {
-  const reduceMotion = useReducedMotion();
-  const progress = useHeroExitProgress();
-
-  const imageScale = useTransform(progress, [0, 1], [1, reduceMotion ? 1 : IMAGE_SCALE_END]);
-  const contentY = useTransform(progress, [0, 1], ["0%", reduceMotion ? "0%" : CONTENT_EXIT_Y]);
-  const contentOpacity = useTransform(progress, [0, 0.6], [1, reduceMotion ? 1 : 0]);
-  const dim = useTransform(progress, [0, 1], [0, reduceMotion ? 0 : DIM_END]);
-
   return (
     // Sticky: the hero stays put and the About section (z-10) slides up over
     // it, so the ticker at About's top edge "grows" into a full section.
+    // The `stage-*` layers below are scroll-driven CSS animations (see
+    // globals.css): the photograph pushes in, the copy drifts up and fades,
+    // and an ink veil deepens as About covers the hero. Each moves at its own
+    // rate, which is where the depth comes from.
     <section className="sticky top-0 z-0 isolate flex min-h-[max(100svh,640px)] flex-col overflow-hidden bg-ink-950">
       {/* Scroll scale on the outer layer, one-time settle on the inner one:
           separate elements so the CSS entrance and the scroll-linked
           transform never fight over the same `transform`. */}
-      <motion.div
-        className="absolute inset-0 -z-20 will-change-transform"
-        style={{ scale: imageScale }}
-      >
+      <div className="stage-image absolute inset-0 -z-20">
         <div className="hero-settle absolute inset-0">
           <Image
             src="/images/hero-wind-turbines-sunset.png"
@@ -56,7 +39,7 @@ export function Hero() {
             className="object-cover object-[70%_50%]"
           />
         </div>
-      </motion.div>
+      </div>
 
       {/* Ink veil that lifts off the photograph on load. It also masks the
           priority image decoding in, so the picture never pops. */}
@@ -84,17 +67,13 @@ export function Hero() {
       {/* Deepens as the About section covers the hero: the layer being
           covered recedes, which is the depth cue that makes the overlap
           read as a surface sliding over another. */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 -z-10 bg-ink-950"
-        style={{ opacity: dim }}
+      <div
+        className="stage-dim pointer-events-none absolute inset-0 -z-10 bg-ink-950 opacity-0"
         aria-hidden="true"
       />
 
       <div className="relative z-10 flex flex-1 flex-col">
-        <motion.div
-          className="flex flex-1 flex-col will-change-transform"
-          style={{ opacity: contentOpacity, y: contentY }}
-        >
+        <div className="stage-content flex flex-1 flex-col">
         <div className="site-container grid flex-1 grid-cols-1 items-center gap-10 pt-20 pb-10 lg:grid-cols-12 lg:pt-24 lg:pb-14">
           <div className="col-span-1 lg:col-span-8">
             {/* No backdrop-blur here: a backdrop-filter on an element that is
@@ -167,6 +146,7 @@ export function Hero() {
               </Button>
               <Button
                 href="#about"
+                onClick={(event) => handleSectionLinkClick(event, "#about")}
                 variant="outline"
                 size="md"
                 className="w-full sm:w-auto"
@@ -176,7 +156,7 @@ export function Hero() {
             </div>
           </div>
         </div>
-        </motion.div>
+        </div>
 
         {/* The ticker is no longer docked here: it is the top edge of the
             About section, which overlaps the bottom of the hero by exactly

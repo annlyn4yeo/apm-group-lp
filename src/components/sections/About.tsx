@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import {
   animate,
   motion,
+  useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
-  useTransform,
 } from "framer-motion";
 import { FOUNDING_INTERESTS } from "@/lib/constants";
+import { getRiseDistance, isStageAnimated, useRevealOnce } from "@/lib/hooks";
 import { Ticker } from "@/components/ui/Ticker";
 
 const HEADING_LINES = [
@@ -64,58 +65,63 @@ export function About() {
   const tickerRef = useRef<HTMLDivElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
-  const [revealed, setRevealed] = useState(false);
 
-  // Reveal once the section's top edge has crossed into the top 14% of the
-  // viewport, i.e. it is fully on screen. An IntersectionObserver (not a
-  // scroll listener) so a reload mid-page reveals immediately.
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setRevealed(true);
-        observer.disconnect();
-      },
-      { rootMargin: "0px 0px -86% 0px" },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
+  // Each block reveals as it enters the viewport (see `useRevealOnce`), so
+  // the heading loads while the section is still rising, and the story,
+  // milestone and strip load as they are scrolled to. Stagger slots restart
+  // at 0 inside each block.
+  const [headerRef, headerRevealed] = useRevealOnce<HTMLDivElement>();
+  const [storyBlockRef, storyRevealed] = useRevealOnce<HTMLDivElement>();
+  const [milestoneRef, milestoneRevealed] = useRevealOnce<HTMLElement>();
+  const [stripRef, stripRevealed] = useRevealOnce<HTMLDivElement>();
 
-  // Ticker: fully there while the section is rising, gone by the time its top
-  // edge reaches the top of the viewport. Scrubbed with scroll, so it
-  // reappears the same way when scrolling back up.
-  const { scrollYProgress: rise } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "start start"],
-  });
-  const tickerOpacity = useTransform(rise, [0.78, 0.96], [1, 0]);
-  useMotionValueEvent(rise, "change", (value) => {
-    // Out of sight also means out of the tab order.
-    if (tickerRef.current) tickerRef.current.inert = value > 0.96;
+  const { scrollY } = useScroll();
+
+  // The ticker fade itself is a scroll-driven CSS animation (`.stage-ticker`);
+  // this only takes it out of the tab order once it has faded out. Only while
+  // that animation is actually running (not in browsers without support).
+  useMotionValueEvent(scrollY, "change", (y) => {
+    const ticker = tickerRef.current;
+    if (ticker) ticker.inert = isStageAnimated(sectionRef.current) && y > getRiseDistance() * 0.96;
   });
 
   // Story rail: a copper line fills down the left edge as the story is read.
-  // It must be able to reach 1 at the bottom of the page: with About as the
-  // last section there is only ~350px of page below the story, so the story's
-  // end can never rise above ~60% of a desktop viewport. Ending the range at
-  // 85% keeps it reachable, and it completes as the last paragraph is on
-  // screen. Revisit if the tail below the story shrinks.
-  const { scrollYProgress: read } = useScroll({
-    target: storyRef,
-    offset: ["start 80%", "end 85%"],
-  });
-  const railFill = useTransform(read, [0, 1], [reduceMotion ? 1 : 0, 1]);
+  // Progress is measured from the story's real on-screen box (framer's
+  // `useScroll` target offsets ignore transforms, and About is held back by
+  // one). 0 when the story's top reaches 80% of the viewport, 1 when its
+  // bottom reaches 85%. That end has to be reachable at the bottom of the
+  // page: with About the last section there is only ~350px below the story,
+  // so its end can never rise above ~60% of a desktop viewport. Revisit if
+  // the tail below the story shrinks.
+  const railFill = useMotionValue(reduceMotion ? 1 : 0);
+  useEffect(() => {
+    const story = storyRef.current;
+    if (!story) return;
+    if (reduceMotion) {
+      railFill.set(1);
+      return;
+    }
+    const update = () => {
+      const { top, height } = story.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const span = Math.max(1, height - 0.05 * vh);
+      railFill.set(Math.min(1, Math.max(0, (0.8 * vh - top) / span)));
+    };
+    update();
+    const stop = scrollY.on("change", update);
+    window.addEventListener("resize", update);
+    return () => {
+      stop();
+      window.removeEventListener("resize", update);
+    };
+  }, [scrollY, railFill, reduceMotion]);
 
   return (
     <section
       id="about"
       ref={sectionRef}
       aria-labelledby="about-heading"
-      data-revealed={revealed}
-      className="relative z-10 -mt-[var(--ticker-h)] bg-verdigris-900 pb-24 pt-[calc(var(--ticker-h)+6rem)] lg:pb-36 lg:pt-[calc(var(--ticker-h)+9rem)]"
+      className="stage-about relative z-10 -mt-[var(--ticker-h)] min-h-[100svh] bg-verdigris-900 pb-24 pt-[calc(var(--ticker-h)+6rem)] lg:pb-36 lg:pt-[calc(var(--ticker-h)+9rem)]"
     >
       {/* Shadow the section casts onto the pinned hero as it slides over. */}
       <div
@@ -123,16 +129,15 @@ export function About() {
         className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-ink-950/45 to-transparent"
       />
 
-      <motion.div
+      <div
         ref={tickerRef}
-        style={{ opacity: tickerOpacity }}
-        className="absolute inset-x-0 top-0 border-t border-verdigris-700/40"
+        className="stage-ticker absolute inset-x-0 top-0 border-t border-verdigris-700/40"
       >
         <Ticker />
-      </motion.div>
+      </div>
 
       <div className="site-container">
-        <div className="max-w-4xl">
+        <div ref={headerRef} data-revealed={headerRevealed} className="max-w-4xl">
           <p
             style={slot(0)}
             className="about-item eyebrow text-verdigris-300"
@@ -172,20 +177,31 @@ export function About() {
         </div>
 
         <div className="mt-16 grid gap-12 lg:mt-24 lg:grid-cols-12 lg:gap-20">
-          <div ref={storyRef} className="relative pl-7 md:pl-10 lg:col-span-7">
+          <div
+            ref={(node) => {
+              storyRef.current = node;
+              storyBlockRef.current = node;
+            }}
+            data-revealed={storyRevealed}
+            className="relative pl-7 md:pl-10 lg:col-span-7"
+          >
+            {/* The rail belongs to the story's own reveal: the track fades in
+                with the first paragraph (the fill is a child, so its scale
+                never competes with the reveal's transform). */}
             <div
               aria-hidden="true"
-              className="absolute bottom-1 left-0 top-1 w-px bg-verdigris-700"
-            />
-            <motion.div
-              aria-hidden="true"
-              style={{ scaleY: railFill }}
-              className="absolute bottom-1 left-0 top-1 w-px origin-top bg-copper-300"
-            />
+              style={slot(0)}
+              className="about-item absolute bottom-1 left-0 top-1 w-px bg-verdigris-700"
+            >
+              <motion.div
+                style={{ scaleY: railFill }}
+                className="absolute inset-0 origin-top bg-copper-300"
+              />
+            </div>
 
             <div className="space-y-8">
               <p
-                style={slot(4)}
+                style={slot(0)}
                 className="about-item font-body text-base leading-[1.75] text-paper-100/90 sm:text-lg"
               >
                 APM Wind Energy and Plantation Pvt. Ltd. was established in{" "}
@@ -196,7 +212,7 @@ export function About() {
                 , who holds an M.Tech in Agricultural Engineering.
               </p>
               <p
-                style={slot(5)}
+                style={slot(1)}
                 className="about-item font-body text-base leading-[1.75] text-paper-100/90 sm:text-lg"
               >
                 With a vision to dream big and turn ideas into reality, Mr. M.
@@ -204,7 +220,7 @@ export function About() {
                 innovation and hard work.
               </p>
               <p
-                style={slot(6)}
+                style={slot(2)}
                 className="about-item font-body text-base leading-[1.75] text-paper-100/90 sm:text-lg"
               >
                 The company began its activities in agriculture and horticulture
@@ -216,10 +232,10 @@ export function About() {
             </div>
           </div>
 
-          <aside className="lg:col-span-5">
+          <aside ref={milestoneRef} data-revealed={milestoneRevealed} className="lg:col-span-5">
             <div className="lg:sticky lg:top-32">
               <div
-                style={slot(4)}
+                style={slot(0)}
                 className="about-item rounded-tick border border-verdigris-700 bg-verdigris-950/70 p-8 lg:p-10"
               >
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-verdigris-300">
@@ -230,11 +246,11 @@ export function About() {
                   className="mt-6 font-display font-extrabold leading-none text-copper-300"
                   style={{ fontSize: "clamp(5.5rem, 3.5rem + 6.5vw, 9rem)" }}
                 >
-                  <CountUp run={revealed} reduceMotion={reduceMotion} />
+                  <CountUp run={milestoneRevealed} reduceMotion={reduceMotion} />
                 </p>
                 <span
                   aria-hidden="true"
-                  style={slot(8)}
+                  style={slot(3)}
                   className="about-draw mt-6 block h-px w-16 bg-copper-300"
                 />
                 <p className="mt-5 font-display text-2xl font-bold uppercase leading-tight tracking-tight text-paper-50 sm:text-3xl">
@@ -245,9 +261,9 @@ export function About() {
           </aside>
         </div>
 
-        <div className="mt-20 lg:mt-28">
+        <div ref={stripRef} data-revealed={stripRevealed} className="mt-20 lg:mt-28">
           <h3
-            style={slot(7)}
+            style={slot(0)}
             className="about-item font-display text-xl font-bold uppercase tracking-tight text-paper-50 sm:text-2xl"
           >
             Diversified Operations
@@ -256,7 +272,7 @@ export function About() {
             {FOUNDING_INTERESTS.map((name, index) => (
               <li
                 key={name}
-                style={slot(8 + index)}
+                style={slot(1 + index)}
                 className="about-item border-t border-verdigris-700 pt-4"
               >
                 <span className="font-mono text-xs tracking-[0.18em] text-copper-300">

@@ -12,7 +12,12 @@ import {
 } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBodyScrollLock, useFocusTrap, useScrollSpy } from "@/lib/hooks";
+import {
+  handleSectionLinkClick,
+  useBodyScrollLock,
+  useFocusTrap,
+  useScrollSpy,
+} from "@/lib/hooks";
 import { engineeredEase, springSettle, springIndicator } from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Logomark } from "@/components/ui/Logomark";
@@ -123,6 +128,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? (link.href === "/" ? "page" : "location") : undefined}
+                  onClick={(event) => handleSectionLinkClick(event, link.href)}
                   onPointerEnter={onLinkEnter(link.href)}
                   onFocus={() => setPointed(link.href)}
                   onBlur={() => setPointed(null)}
@@ -228,7 +234,10 @@ export function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    onClick={closeMenu}
+                    onClick={(event) => {
+                      handleSectionLinkClick(event, link.href);
+                      closeMenu();
+                    }}
                     className="font-display text-[28px] font-extrabold uppercase tracking-tight text-paper-50 transition-colors duration-direct ease-engineered hover:text-copper-300"
                   >
                     {link.label}

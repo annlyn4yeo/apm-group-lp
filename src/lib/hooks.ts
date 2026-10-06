@@ -1,41 +1,75 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
-import { useMotionValue, useScroll, type MotionValue } from "framer-motion";
+import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
 
 /**
- * 0 at the top of the page, 1 when the About section's top edge reaches the
- * top of the viewport (one viewport of scroll, minus the ticker band that is
- * already peeking in at load). Drives the hero's parallax while it is pinned
- * behind the section sliding over it.
- *
- * A motion value written from a scroll subscription, not React state: it
- * updates the DOM directly and never re-renders. Measured on mount so a page
- * restored mid-scroll starts at the right value.
+ * Scroll distance, in px, over which the About section finishes rising over
+ * the pinned hero: the same quantity as `--rise-distance` in design-tokens.css
+ * (a calc() custom property reads back as an unresolved string, so it is
+ * rebuilt from its parts here).
  */
-export function useHeroExitProgress(): MotionValue<number> {
-  const { scrollY } = useScroll();
-  const progress = useMotionValue(0);
+export function getRiseDistance(): number {
+  const root = getComputedStyle(document.documentElement);
+  const ticker = parseFloat(root.getPropertyValue("--ticker-h")) || 0;
+  const speed = parseFloat(root.getPropertyValue("--rise-speed")) || 1;
+  return Math.max(1, (window.innerHeight - ticker) / speed);
+}
+
+/** True when the element is currently driven by a scroll-linked CSS animation. */
+export function isStageAnimated(element: Element | null): boolean {
+  return !!element && getComputedStyle(element).animationName.includes("stage-");
+}
+
+/**
+ * Click handler for in-page section links. About is held back by a scroll-
+ * linked transform, so the browser's native anchor scroll (which aims at
+ * where About is *now*) lands short and the section never finishes rising.
+ * When About is animated, scroll to the end of its rise instead; every other
+ * link keeps native behaviour.
+ */
+export function handleSectionLinkClick(event: MouseEvent<HTMLElement>, href: string) {
+  if (!href.startsWith("#")) return;
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  const target = document.getElementById(href.slice(1));
+  if (!target || !isStageAnimated(target)) return;
+
+  event.preventDefault();
+  window.scrollTo({ top: getRiseDistance(), behavior: "smooth" });
+  history.replaceState(null, "", href);
+}
+
+/**
+ * True once the referenced block has entered the viewport (its top edge is
+ * more than `bottomInset` up from the bottom of the screen), and stays true.
+ * Used to reveal each block of a section as it arrives, rather than the whole
+ * section at once, so content never sits invisible while it is already on
+ * screen or plays out below the fold unseen. IntersectionObserver, so a
+ * reload mid-page reveals whatever is already in view straight away.
+ */
+export function useRevealOnce<T extends Element>(
+  bottomInset = "12%",
+): [RefObject<T | null>, boolean] {
+  const ref = useRef<T | null>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const update = () => {
-      const ticker = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--ticker-h"),
-      );
-      const distance = Math.max(1, window.innerHeight - (Number.isFinite(ticker) ? ticker : 0));
-      progress.set(Math.min(1, Math.max(0, scrollY.get() / distance)));
-    };
+    const element = ref.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setRevealed(true);
+        observer.disconnect();
+      },
+      { rootMargin: `0px 0px -${bottomInset} 0px` },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [bottomInset]);
 
-    update();
-    const stop = scrollY.on("change", update);
-    window.addEventListener("resize", update);
-    return () => {
-      stop();
-      window.removeEventListener("resize", update);
-    };
-  }, [scrollY, progress]);
-
-  return progress;
+  return [ref, revealed];
 }
 
 /**

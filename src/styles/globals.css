@@ -164,6 +164,60 @@
   from { opacity: 1; }
 }
 
+/* Hero-to-About cover. Scroll-driven CSS animations, so the compositor moves
+   About, the hero layers and the ticker fade in lockstep with the scroll
+   position (JS-driven parallax visibly trails the scroll on fast flicks).
+
+   About is translated down by up to --rise-extra and released over
+   --rise-distance of scroll, so it climbs at --rise-speed of the page's
+   speed; `.stage` gets matching bottom padding so the page still ends exactly
+   where About does. Without support (Firefox today) or with reduced motion
+   none of this applies and the cover is the plain 1:1 curtain. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stage { padding-bottom: var(--rise-extra); }
+
+    .stage-about {
+      animation: stage-about linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 var(--rise-distance);
+      will-change: transform;
+    }
+    .stage-image {
+      animation: stage-image linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 var(--rise-distance);
+      will-change: transform;
+    }
+    .stage-content {
+      animation: stage-content-y linear both, stage-content-fade linear both;
+      animation-timeline: scroll(root), scroll(root);
+      /* The fade is paced to the cover, not ahead of it: with About rising
+         at --rise-speed, the copy should still be readable above its edge
+         until it is mostly covered, not blank out while still uncovered. */
+      animation-range: 0 var(--rise-distance), 0 calc(var(--rise-distance) * 0.85);
+      will-change: transform, opacity;
+    }
+    .stage-dim {
+      animation: stage-dim linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 var(--rise-distance);
+    }
+    .stage-ticker {
+      animation: stage-ticker linear both;
+      animation-timeline: scroll(root);
+      animation-range: calc(var(--rise-distance) * 0.78) calc(var(--rise-distance) * 0.96);
+    }
+  }
+}
+
+@keyframes stage-about { to { transform: translateY(var(--rise-extra)); } }
+@keyframes stage-image { to { transform: scale(1.1); } }
+@keyframes stage-content-y { to { transform: translateY(-14%); } }
+@keyframes stage-content-fade { to { opacity: 0; } }
+@keyframes stage-dim { to { opacity: 0.6; } }
+@keyframes stage-ticker { to { opacity: 0; } }
+
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
