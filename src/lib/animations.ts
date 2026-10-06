@@ -12,6 +12,12 @@ export const engineeredEase = [0.16, 1, 0.3, 1] as const;
 export const springSettle: Transition = { type: "spring", bounce: 0, duration: 0.4 };
 
 /**
+ * Shared nav underline: critically damped, a touch quicker than a page
+ * entrance so it keeps up with a pointer sweeping across the links.
+ */
+export const springIndicator: Transition = { type: "spring", bounce: 0, duration: 0.32 };
+
+/**
  * Reserved for genuinely gesture/momentum-driven moments (a flick, a drag
  * release) — not for static hovers or page-load reveals. None of this
  * phase's components are drag-driven yet; this exists for when one is.
@@ -55,9 +61,8 @@ export const hairlineDraw: Variants = {
  */
 export const maskedLineReveal: Variants = {
   hidden: { transform: "translateY(100%)" },
-  visible: { transform: "translateY(0%)", transition: { ...springSettle, duration: 0.5 } },
+  visible: { transform: "translateY(0%)", transition: { duration: 0.9, ease: engineeredEase } },
 };
-
 /**
  * Reduced-motion fallback: opacity only, no translation or scale. Swap in
  * for `staggerItem` / `maskedLineReveal` whenever `useReducedMotion()` is

@@ -1,13 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, type PointerEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import {
+  AnimatePresence,
+  MotionConfig,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+} from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBodyScrollLock, useFocusTrap } from "@/lib/hooks";
-import { springSettle } from "@/lib/animations";
+import { engineeredEase, springSettle, springIndicator } from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Logomark } from "@/components/ui/Logomark";
 
@@ -24,10 +30,23 @@ const NAV_LINKS = [
 
 const SCROLL_THRESHOLD = 80;
 
+// Icon swap for the mobile menu button: a short rotate + fade so the
+// hamburger and the X read as one control changing state, not two icons
+// teleporting. Opacity-only under reduced motion (MotionConfig below).
+const iconSwap = {
+  initial: { opacity: 0, transform: "rotate(-80deg) scale(0.7)" },
+  animate: { opacity: 1, transform: "rotate(0deg) scale(1)" },
+  exit: { opacity: 0, transform: "rotate(80deg) scale(0.7)" },
+  transition: { duration: 0.18, ease: engineeredEase },
+} as const;
+
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // The link the underline is currently following: pointer hover or keyboard
+  // focus. null means "rest on the active page link".
+  const [pointed, setPointed] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // useMotionValueEvent only triggers our setState when the threshold is
@@ -39,26 +58,43 @@ export function Navbar() {
     setScrolled((prev) => (prev === next ? prev : next));
   });
 
-  useBodyScrollLock(menuOpen);
-  useFocusTrap(menuRef, menuOpen, () => setMenuOpen(false));
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
-  const closeMenu = () => setMenuOpen(false);
+  useBodyScrollLock(menuOpen);
+  useFocusTrap(menuRef, menuOpen, closeMenu);
+
   const mobileLinks = [...NAV_LINKS, { label: "Contact", href: "#contact" }] as const;
 
+  const activeHref = pathname === "/" ? "/" : null;
+  const underlineHref = pointed ?? activeHref;
+
+  // Mouse only: touch fires synthetic enter events on tap and would leave
+  // the underline parked on whatever was last pressed.
+  const onLinkEnter = (href: string) => (event: PointerEvent<HTMLAnchorElement>) => {
+    if (event.pointerType === "mouse") setPointed(href);
+  };
+
   return (
-    <>
-      <header
-        className={cn(
-          "fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b transition-[background-color,backdrop-filter,border-color] duration-direct ease-engineered md:h-[76px]",
-          scrolled
-            ? "border-ink-700/50 bg-ink-900/[0.92] backdrop-blur-[12px]"
-            : "border-transparent bg-transparent",
-        )}
-      >
-        <div className="nav-container flex items-center justify-between gap-4">
+    // `reducedMotion="user"` drops transform/layout animation (the sliding
+    // underline, icon rotation, link stagger) and keeps opacity, which is
+    // exactly the "gentler, not zero" behaviour DESIGN.md asks for.
+    <MotionConfig reducedMotion="user">
+      <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center md:h-[76px]">
+        {/* Surface layer. The blur and border live on their own layer and
+            fade in with opacity, instead of transitioning backdrop-filter
+            itself (which re-rasterises the blur every frame). */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 border-b border-ink-700/50 bg-ink-900/[0.92] backdrop-blur-[12px] transition-opacity duration-[180ms] ease-engineered",
+            scrolled ? "opacity-100" : "opacity-0",
+          )}
+        />
+
+        <div className="nav-container relative flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="flex min-w-0 items-center gap-2 text-paper-50 transition-colors duration-direct ease-engineered hover:text-copper-300"
+            className="group/logo flex min-w-0 items-center gap-2 text-paper-50 transition-colors duration-direct ease-engineered hover:text-copper-300"
           >
             <Logomark className="h-5 w-5 shrink-0 text-copper-500 sm:h-6 sm:w-6" />
             {/* Full wordmark only where there's genuine room for it (xl+);
@@ -69,32 +105,49 @@ export function Navbar() {
             </span>
           </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-5 lg:flex xl:gap-7">
+          <nav
+            aria-label="Primary"
+            className="hidden items-center gap-5 lg:flex xl:gap-7"
+            onPointerLeave={() => setPointed(null)}
+          >
             {NAV_LINKS.map((link) => {
-              const isActive = link.href === "/" ? pathname === "/" : false;
+              const isActive = link.href === activeHref;
+              const isPointed = link.href === pointed;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? "page" : undefined}
+                  onPointerEnter={onLinkEnter(link.href)}
+                  onFocus={() => setPointed(link.href)}
+                  onBlur={() => setPointed(null)}
                   className={cn(
-                    "relative whitespace-nowrap py-2 font-display text-[13px] font-bold text-paper-50/85 transition-colors duration-direct ease-engineered hover:text-paper-50 xl:text-sm",
-                    isActive && "text-paper-50",
+                    "relative whitespace-nowrap py-2 font-display text-[13px] font-bold text-paper-50/80 transition-colors duration-direct ease-engineered xl:text-sm",
+                    (isActive || isPointed) && "text-paper-50",
                   )}
                 >
                   {link.label}
-                  {isActive && (
-                    <span
+                  {underlineHref === link.href && (
+                    // One shared underline that glides between links
+                    // (layoutId) rather than each link drawing its own, so
+                    // moving across the nav reads as a single object.
+                    <motion.span
+                      layoutId="nav-underline"
                       aria-hidden="true"
+                      transition={springIndicator}
                       className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-copper-500"
                     />
                   )}
                 </Link>
               );
             })}
-            <Button href="#contact" variant="outline" size="sm" className="shrink-0">
-              Contact
-            </Button>
+            {/* Pointing at the CTA releases the underline back to the
+                active page; it only follows the text links. */}
+            <span className="shrink-0" onPointerEnter={() => setPointed(null)}>
+              <Button href="#contact" variant="outline" size="sm">
+                Contact
+              </Button>
+            </span>
           </nav>
 
           <button
@@ -103,9 +156,20 @@ export function Navbar() {
             aria-controls="mobile-nav"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center text-paper-50 lg:hidden"
+            className="relative flex h-11 w-11 items-center justify-center text-paper-50 lg:hidden"
           >
-            {menuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={menuOpen ? "close" : "open"}
+                className="flex"
+                initial={iconSwap.initial}
+                animate={iconSwap.animate}
+                exit={iconSwap.exit}
+                transition={iconSwap.transition}
+              >
+                {menuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+              </motion.span>
+            </AnimatePresence>
           </button>
         </div>
       </header>
@@ -121,7 +185,7 @@ export function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ ...springSettle, duration: 0.3 }}
+            transition={{ duration: 0.24, ease: engineeredEase }}
             className="fixed inset-0 z-[60] flex flex-col bg-ink-950 lg:hidden"
           >
             <div className="site-container flex h-16 items-center justify-end">
@@ -141,7 +205,7 @@ export function Navbar() {
               animate="visible"
               variants={{
                 hidden: {},
-                visible: { transition: { staggerChildren: 0.04, delayChildren: 0.04 } },
+                visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
               }}
               className="site-container flex flex-1 flex-col justify-center gap-6 pb-16"
             >
@@ -170,6 +234,6 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </MotionConfig>
   );
 }
