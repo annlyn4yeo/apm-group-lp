@@ -90,6 +90,33 @@
   .hero-settle { animation: hero-settle 1800ms var(--ease-out-quart) backwards; will-change: transform; }
   .hero-veil { opacity: 0; animation: hero-veil 1400ms var(--ease-out-quart) 120ms backwards; }
 
+  /* About reveal. Same rules as the hero entrance (see above): CSS keyframes
+     with a `backwards` fill and `to` omitted, `will-change` kept on so
+     nothing is promoted or demoted when it lands. Hidden by default and shown
+     when the section sets data-revealed (fully in view). */
+  .about-item { opacity: 0; will-change: transform, opacity; }
+  .about-line { transform: translateY(120%); will-change: transform; }
+  .about-draw { transform: scaleX(0); transform-origin: left; will-change: transform; }
+
+  [data-revealed="true"] .about-item {
+    opacity: 1;
+    animation: about-rise 800ms var(--ease-out-quart) calc(var(--i, 0) * 80ms) backwards;
+  }
+  [data-revealed="true"] .about-line {
+    transform: none;
+    animation: about-line 900ms var(--ease-out-quart) calc(var(--i, 0) * 80ms) backwards;
+  }
+  [data-revealed="true"] .about-draw {
+    transform: none;
+    animation: about-draw 900ms var(--ease-out-quart) calc(var(--i, 0) * 80ms) backwards;
+  }
+
+  /* No JavaScript, no reveal trigger: show everything. */
+  @media (scripting: none) {
+    .about-item { opacity: 1; }
+    .about-line, .about-draw { transform: none; }
+  }
+
   /* Ticker edges dissolve instead of clipping hard against the viewport. */
   .ticker-mask {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
@@ -102,7 +129,7 @@
 }
 
 @keyframes hero-line {
-  from { transform: translateY(100%); }
+  from { transform: translateY(120%); }
 }
 
 @keyframes hero-draw {
@@ -110,6 +137,22 @@
 }
 
 @keyframes hero-fade {
+  from { opacity: 0; }
+}
+
+@keyframes about-rise {
+  from { opacity: 0; transform: translateY(20px); }
+}
+
+@keyframes about-line {
+  from { transform: translateY(120%); }
+}
+
+@keyframes about-draw {
+  from { transform: scaleX(0); }
+}
+
+@keyframes about-fade {
   from { opacity: 0; }
 }
 
@@ -143,4 +186,14 @@
     will-change: opacity;
   }
   .hero-settle { animation: none; will-change: auto; }
+
+  /* About: opacity fade only, no rise, line-mask or rule draw. */
+  .about-line, .about-draw { transform: none; opacity: 0; will-change: opacity; }
+  [data-revealed="true"] .about-item,
+  [data-revealed="true"] .about-line,
+  [data-revealed="true"] .about-draw {
+    opacity: 1;
+    animation-name: about-fade;
+    animation-duration: 400ms !important;
+  }
 }

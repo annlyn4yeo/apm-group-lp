@@ -39,7 +39,9 @@ function TickerTrackContent() {
 const RATE_EASE = 0.12;
 
 /**
- * Docked base ticker. Two duplicated tracks sit side by side and the whole
+ * Ticker band, the top edge of the About section. It has no surface of its
+ * own: it sits on the section's green, so it reads as part of that section
+ * rather than a strip laid on top of it. Two duplicated tracks sit side by side and the whole
  * pair translates by -50%, producing a seamless 45s loop with no JS-driven
  * positioning. The real content is exposed once via sr-only text; every
  * visual track is `aria-hidden` to avoid reading the brand list 8x over.
@@ -79,7 +81,7 @@ export function Ticker() {
 
   return (
     <div
-      className="relative w-full border-t border-verdigris-700/40 bg-verdigris-900"
+      className="relative h-[var(--ticker-h)] w-full"
       tabIndex={0}
       aria-label="APM Groups of Company operating divisions"
       onMouseEnter={pause}
@@ -91,10 +93,10 @@ export function Ticker() {
     >
       <span className="sr-only">{TICKER_ITEMS.join(", ")}</span>
 
-      <div className="ticker-mask overflow-hidden">
+      <div className="ticker-mask flex h-full items-center overflow-hidden">
         <div
           ref={trackRef}
-          className="ticker-track flex w-max items-center py-2.5 sm:py-3"
+          className="ticker-track flex w-max items-center"
           aria-hidden="true"
         >
           <span className="flex shrink-0 items-center">

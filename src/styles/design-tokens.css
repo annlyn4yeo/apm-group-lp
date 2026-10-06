@@ -14,6 +14,10 @@
   --paper-100: #ece7dc;
   --paper-50: #f7f5f1;
   --radius-tick: 2px;
+  /* Fixed height of the ticker band. The hero reserves it, and the About
+     section is pulled up by exactly this much so the ticker becomes the
+     top edge of the next section. */
+  --ticker-h: 44px;
   --site-gutter: clamp(20px, 4vw, 48px);
   --site-max: 1280px;
   --ease-engineered: cubic-bezier(0.16, 1, 0.3, 1);

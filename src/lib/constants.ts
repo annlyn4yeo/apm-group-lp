@@ -19,4 +19,18 @@ export const OPERATING_DIVISIONS = [
   { name: "APM Steels", tag: "Heavy Metallurgy" },
 ] as const;
 
+/**
+ * The six founding-era interests shown in About's "Diversified Operations"
+ * strip (DESIGN.md §01 item 3). Deliberately not the 7-item taxonomy above:
+ * APM Plaza joins later in the story.
+ */
+export const FOUNDING_INTERESTS = [
+  "Wind Energy",
+  "Plantation",
+  "Textiles",
+  "Construction",
+  "Steel Plant",
+  "Real Estate",
+] as const;
+
 export type OperatingDivision = (typeof OPERATING_DIVISIONS)[number];

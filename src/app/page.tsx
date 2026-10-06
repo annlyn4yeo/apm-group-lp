@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { About } from "@/components/sections/About";
 
 export default function HomePage() {
   return (
@@ -14,7 +15,12 @@ export default function HomePage() {
       <Navbar />
 
       <main id="main-content">
-        <Hero />
+        {/* Stage: the hero is sticky inside this wrapper while About slides
+            over it. */}
+        <div className="relative">
+          <Hero />
+          <About />
+        </div>
       </main>
     </>
   );

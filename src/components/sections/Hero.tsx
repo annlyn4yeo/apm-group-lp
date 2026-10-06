@@ -1,16 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import Image from "next/image";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, useReducedMotion, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useHeroExitProgress } from "@/lib/hooks";
 import { Button } from "@/components/ui/Button";
-import { Ticker } from "@/components/ui/Ticker";
 
 const HEADLINE_LINES = [
   { text: "ONE GROUP.", accent: false },
@@ -18,65 +13,38 @@ const HEADLINE_LINES = [
   { text: "ONE VISION.", accent: true },
 ] as const;
 
-// Restrained parallax range per the motion contract (8–24px), not a literal
-// 0.92x-of-page-scroll translation — that would move the image hundreds of
-// pixels on a long page, which DESIGN.md's motion tokens explicitly forbid.
-// Positive: the photograph travels slower than the page, which is what reads
-// as depth (the old negative range moved it faster than the page).
-const PARALLAX_RANGE_PX = 24;
-
-// Copy lifts away and fades over the first half of the hero's scroll, so the
-// photograph is left alone as the section exits instead of text sliding
-// across it.
-const CONTENT_EXIT_PX = 56;
+// The hero is pinned (sticky) while the About section slides up over it, so
+// its own scroll position never changes. These layers are driven by
+// `useHeroExitProgress` instead: 0 at the top of the page, 1 when About's top
+// edge reaches the top of the viewport. Each layer moves at its own rate,
+// which is where the depth comes from.
+const IMAGE_SCALE_END = 1.1; // photograph pushes in slowly
+const CONTENT_EXIT_Y = "-14%"; // copy drifts up far slower than the page
+const DIM_END = 0.6; // ink veil deepens as the section covers it
 
 // Entrance stagger slot, consumed by `.hero-rise` / `.hero-line` in
 // globals.css (delay = slot * 80ms + 80ms).
 const slot = (index: number) => ({ "--i": index }) as CSSProperties;
 
-function useIsDesktopViewport(minWidth = 1024) {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia(`(min-width: ${minWidth}px)`);
-    const update = () => setIsDesktop(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, [minWidth]);
-
-  return isDesktop;
-}
-
 export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
-  const isDesktop = useIsDesktopViewport();
-  const parallaxActive = isDesktop && !reduceMotion;
+  const progress = useHeroExitProgress();
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const parallaxY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    parallaxActive ? [0, PARALLAX_RANGE_PX] : [0, 0],
-  );
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.55], reduceMotion ? [1, 1] : [1, 0]);
-  const contentY = useTransform(scrollYProgress, [0, 0.55], reduceMotion ? [0, 0] : [0, -CONTENT_EXIT_PX]);
+  const imageScale = useTransform(progress, [0, 1], [1, reduceMotion ? 1 : IMAGE_SCALE_END]);
+  const contentY = useTransform(progress, [0, 1], ["0%", reduceMotion ? "0%" : CONTENT_EXIT_Y]);
+  const contentOpacity = useTransform(progress, [0, 0.6], [1, reduceMotion ? 1 : 0]);
+  const dim = useTransform(progress, [0, 1], [0, reduceMotion ? 0 : DIM_END]);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative isolate flex min-h-[max(100svh,640px)] flex-col overflow-hidden bg-ink-950"
-    >
-      {/* Scroll parallax on the outer layer, one-time settle on the inner
-          one: separate elements so the CSS entrance and the scroll-linked
+    // Sticky: the hero stays put and the About section (z-10) slides up over
+    // it, so the ticker at About's top edge "grows" into a full section.
+    <section className="sticky top-0 z-0 isolate flex min-h-[max(100svh,640px)] flex-col overflow-hidden bg-ink-950">
+      {/* Scroll scale on the outer layer, one-time settle on the inner one:
+          separate elements so the CSS entrance and the scroll-linked
           transform never fight over the same `transform`. */}
       <motion.div
-        className="absolute inset-0 -z-20 will-change-transform motion-reduce:!transform-none"
-        style={{ y: parallaxY }}
+        className="absolute inset-0 -z-20 will-change-transform"
+        style={{ scale: imageScale }}
       >
         <div className="hero-settle absolute inset-0">
           <Image
@@ -111,6 +79,15 @@ export function Hero() {
           backgroundImage:
             "radial-gradient(ellipse 85% 120% at 16% 45%, rgba(21,19,14,0.84) 0%, rgba(21,19,14,0.56) 45%, rgba(21,19,14,0.26) 78%)",
         }}
+      />
+
+      {/* Deepens as the About section covers the hero: the layer being
+          covered recedes, which is the depth cue that makes the overlap
+          read as a surface sliding over another. */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 -z-10 bg-ink-950"
+        style={{ opacity: dim }}
+        aria-hidden="true"
       />
 
       <div className="relative z-10 flex flex-1 flex-col">
@@ -201,7 +178,10 @@ export function Hero() {
         </div>
         </motion.div>
 
-        <div className="site-container pb-6 lg:pb-8">
+        {/* The ticker is no longer docked here: it is the top edge of the
+            About section, which overlaps the bottom of the hero by exactly
+            --ticker-h. Reserve that band so the cue clears it. */}
+        <div className="site-container pb-[calc(var(--ticker-h)+1.5rem)] lg:pb-[calc(var(--ticker-h)+2rem)]">
           <div className="flex justify-center lg:justify-start">
             <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-50/70 sm:text-xs">
               Scroll to explore
@@ -214,8 +194,6 @@ export function Hero() {
             </span>
           </div>
         </div>
-
-        <Ticker />
       </div>
     </section>
   );

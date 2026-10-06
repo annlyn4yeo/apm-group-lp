@@ -12,7 +12,7 @@ import {
 } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBodyScrollLock, useFocusTrap } from "@/lib/hooks";
+import { useBodyScrollLock, useFocusTrap, useScrollSpy } from "@/lib/hooks";
 import { engineeredEase, springSettle, springIndicator } from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Logomark } from "@/components/ui/Logomark";
@@ -27,6 +27,8 @@ const NAV_LINKS = [
   { label: "Our Business", href: "#divisions" },
   { label: "Gallery", href: "#gallery" },
 ] as const;
+
+const NAV_HREFS: readonly string[] = NAV_LINKS.map((link) => link.href);
 
 const SCROLL_THRESHOLD = 80;
 
@@ -65,7 +67,10 @@ export function Navbar() {
 
   const mobileLinks = [...NAV_LINKS, { label: "Contact", href: "#contact" }] as const;
 
-  const activeHref = pathname === "/" ? "/" : null;
+  // The section on screen (About, Services, ...); above the first section it
+  // is the hero, so Home.
+  const sectionHref = useScrollSpy(NAV_HREFS);
+  const activeHref = sectionHref ?? (pathname === "/" ? "/" : null);
   const underlineHref = pointed ?? activeHref;
 
   // Mouse only: touch fires synthetic enter events on tap and would leave
@@ -117,7 +122,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  aria-current={isActive ? "page" : undefined}
+                  aria-current={isActive ? (link.href === "/" ? "page" : "location") : undefined}
                   onPointerEnter={onLinkEnter(link.href)}
                   onFocus={() => setPointed(link.href)}
                   onBlur={() => setPointed(null)}
