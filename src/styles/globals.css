@@ -37,6 +37,88 @@
     .cta-arrow { transition: transform 160ms var(--ease-engineered); }
     .group:hover .cta-arrow { transform: translateX(4px); }
   }
+
+  /* Directional button fill: the tint enters from the left edge and leaves
+     toward the right, so hover-out reads as the fill "passing through"
+     rather than rewinding. transform-origin flips on state change (it is
+     not itself animated), only scaleX is. `--sweep` is set per variant. */
+  .btn-sweep { position: relative; isolation: isolate; overflow: hidden; }
+  .btn-sweep::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--sweep);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 280ms var(--ease-engineered);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-sweep:hover::before { transform: scaleX(1); transform-origin: left; }
+  }
+  .btn-sweep:focus-visible::before { transform: scaleX(1); transform-origin: left; }
+
+  /* Hero entrance, one-time (not a loop). Pure CSS keyframes so it runs on
+     the compositor from first paint (no waiting for hydration, no main
+     thread). Three rules keep the landing free of shimmer:
+       1. `backwards` fill, `to` omitted: when an animation ends the element
+          simply returns to its own styles, so no `transform: translateY(0px)`
+          is left committed (framer-motion leaves exactly that behind).
+       2. `will-change` stays on permanently, so the element is never
+          promoted to a layer for the move and demoted at the end. That
+          demotion re-rasterises the text, which is the visible "shiver".
+       3. A shorter-tailed curve, so the last frames do not drift through
+          0.0x px offsets. */
+  .hero-rise {
+    animation: hero-rise 700ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 80ms) backwards;
+    will-change: transform, opacity;
+  }
+  .hero-line {
+    animation: hero-line 900ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 80ms) backwards;
+    will-change: transform;
+  }
+  .hero-draw {
+    animation: hero-draw 700ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 80ms) backwards;
+    will-change: transform;
+  }
+
+  /* The photograph settles from a slight over-scale while a full-bleed ink
+     veil lifts off it, so the scene "comes up" under the headline. The
+     settle layer keeps `will-change` so the 1.7MB image is not re-rastered
+     when the scale reaches 1. The veil rests at opacity 0 and animates from
+     1, so it leaves no fill layer behind. */
+  .hero-settle { animation: hero-settle 1800ms var(--ease-out-quart) backwards; will-change: transform; }
+  .hero-veil { opacity: 0; animation: hero-veil 1400ms var(--ease-out-quart) 120ms backwards; }
+
+  /* Ticker edges dissolve instead of clipping hard against the viewport. */
+  .ticker-mask {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  }
+}
+
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+@keyframes hero-line {
+  from { transform: translateY(100%); }
+}
+
+@keyframes hero-draw {
+  from { transform: scaleX(0); }
+}
+
+@keyframes hero-fade {
+  from { opacity: 0; }
+}
+
+@keyframes hero-settle {
+  from { transform: scale(1.06); }
+}
+
+@keyframes hero-veil {
+  from { opacity: 1; }
 }
 
 @keyframes ticker-scroll {
@@ -51,4 +133,14 @@
   /* Higher-specificity override: stop the ticker outright instead of
      letting it flash through a 45s loop in 0.01ms. */
   .ticker-track { animation: none !important; transform: none !important; }
+
+  /* Hero copy keeps a short opacity fade instead of snapping in; the
+     translate / scale / line-mask movement is dropped. Class selectors beat
+     the universal 0.01ms rule above. */
+  .hero-rise, .hero-line, .hero-draw {
+    animation-name: hero-fade;
+    animation-duration: 400ms !important;
+    will-change: opacity;
+  }
+  .hero-settle { animation: none; will-change: auto; }
 }

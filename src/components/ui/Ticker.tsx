@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 const TICKER_ITEMS = [
   "Construction",
@@ -35,21 +35,51 @@ function TickerTrackContent() {
   );
 }
 
+/** Per-frame easing toward the target playback rate; ~0.12 settles in ~350ms. */
+const RATE_EASE = 0.12;
+
 /**
  * Docked base ticker. Two duplicated tracks sit side by side and the whole
  * pair translates by -50%, producing a seamless 45s loop with no JS-driven
  * positioning. The real content is exposed once via sr-only text; every
  * visual track is `aria-hidden` to avoid reading the brand list 8x over.
+ *
+ * Hover/focus/touch eases the CSS animation's playbackRate down to a stop
+ * (and back up on release) instead of flipping animation-play-state, which
+ * halts the strip dead mid-frame. The ramp runs on refs and the Web
+ * Animations API, so it never touches React state or re-renders.
  */
 export function Ticker() {
-  const [paused, setPaused] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const rate = useRef(1);
+  const target = useRef(1);
+  const frame = useRef(0);
 
-  const pause = () => setPaused(true);
-  const resume = () => setPaused(false);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+
+  const step = () => {
+    const animation = trackRef.current?.getAnimations()[0];
+    if (!animation) {
+      frame.current = 0;
+      return;
+    }
+    rate.current += (target.current - rate.current) * RATE_EASE;
+    if (Math.abs(target.current - rate.current) < 0.005) rate.current = target.current;
+    animation.updatePlaybackRate(rate.current);
+    frame.current = rate.current === target.current ? 0 : requestAnimationFrame(step);
+  };
+
+  const setTarget = (next: number) => {
+    target.current = next;
+    if (!frame.current) frame.current = requestAnimationFrame(step);
+  };
+
+  const pause = () => setTarget(0);
+  const resume = () => setTarget(1);
 
   return (
     <div
-      className="relative w-full overflow-hidden border-t border-verdigris-700/40 bg-verdigris-900"
+      className="relative w-full border-t border-verdigris-700/40 bg-verdigris-900"
       tabIndex={0}
       aria-label="APM Groups of Company operating divisions"
       onMouseEnter={pause}
@@ -61,17 +91,19 @@ export function Ticker() {
     >
       <span className="sr-only">{TICKER_ITEMS.join(", ")}</span>
 
-      <div
-        className="ticker-track flex w-max items-center py-2.5 sm:py-3"
-        style={{ animationPlayState: paused ? "paused" : "running" }}
-        aria-hidden="true"
-      >
-        <span className="flex shrink-0 items-center">
-          <TickerTrackContent />
-        </span>
-        <span className="flex shrink-0 items-center">
-          <TickerTrackContent />
-        </span>
+      <div className="ticker-mask overflow-hidden">
+        <div
+          ref={trackRef}
+          className="ticker-track flex w-max items-center py-2.5 sm:py-3"
+          aria-hidden="true"
+        >
+          <span className="flex shrink-0 items-center">
+            <TickerTrackContent />
+          </span>
+          <span className="flex shrink-0 items-center">
+            <TickerTrackContent />
+          </span>
+        </div>
       </div>
     </div>
   );

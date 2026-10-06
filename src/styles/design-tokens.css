@@ -17,6 +17,10 @@
   --site-gutter: clamp(20px, 4vw, 48px);
   --site-max: 1280px;
   --ease-engineered: cubic-bezier(0.16, 1, 0.3, 1);
+  /* easeOutQuart (easing.dev). Same strong start as --ease-engineered but a
+     shorter tail, so entrances stop creeping through sub-pixel positions
+     (which text renders as a shimmer) well before they end. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --duration-direct: 160ms;
   --duration-reveal: 500ms;
   --duration-draw: 800ms;

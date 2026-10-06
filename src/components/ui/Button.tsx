@@ -38,14 +38,17 @@ export type ButtonProps = LinkButtonProps | NativeButtonProps;
 // geometry everywhere else. Mono/uppercase label treatment: the technical
 // family is reserved for metadata and calls to action.
 const base =
-  "inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-tick border font-mono uppercase tracking-[0.1em] transition-colors duration-direct ease-engineered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950";
+  "btn-sweep inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-tick border font-mono uppercase tracking-[0.1em] transition-colors duration-direct ease-engineered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950";
 
+// The hover fill is a `.btn-sweep` pseudo-element (see globals.css) tinted
+// via `--sweep`, so the colour change travels across the button instead of
+// cross-fading in place.
 const variants: Record<Variant, string> = {
   // Copper is a mid-bright warm hue — dark ink text reads far better on it
   // than light text does (the opposite pairing read as too low-contrast).
-  primary: "border-copper-600 bg-copper-600 text-ink-950 hover:border-copper-500 hover:bg-copper-500",
+  primary: "border-copper-600 bg-copper-600 text-ink-950 [--sweep:#c06430] hover:border-copper-500",
   outline:
-    "border-paper-50/70 border-[1.5px] bg-transparent text-paper-50 hover:border-copper-300 hover:bg-copper-300/10 hover:text-copper-300",
+    "border-paper-50/70 border-[1.5px] bg-transparent text-paper-50 [--sweep:rgb(232_162_115/0.14)] hover:border-copper-300 hover:text-copper-300",
 };
 
 const sizes: Record<Size, string> = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -9,12 +9,6 @@ import {
   useTransform,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  fadeRise,
-  maskedLineReveal,
-  staggerContainer,
-  staggerItem,
-} from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Ticker } from "@/components/ui/Ticker";
 
@@ -27,7 +21,18 @@ const HEADLINE_LINES = [
 // Restrained parallax range per the motion contract (8–24px), not a literal
 // 0.92x-of-page-scroll translation — that would move the image hundreds of
 // pixels on a long page, which DESIGN.md's motion tokens explicitly forbid.
-const PARALLAX_RANGE_PX = 18;
+// Positive: the photograph travels slower than the page, which is what reads
+// as depth (the old negative range moved it faster than the page).
+const PARALLAX_RANGE_PX = 24;
+
+// Copy lifts away and fades over the first half of the hero's scroll, so the
+// photograph is left alone as the section exits instead of text sliding
+// across it.
+const CONTENT_EXIT_PX = 56;
+
+// Entrance stagger slot, consumed by `.hero-rise` / `.hero-line` in
+// globals.css (delay = slot * 80ms + 80ms).
+const slot = (index: number) => ({ "--i": index }) as CSSProperties;
 
 function useIsDesktopViewport(minWidth = 1024) {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -56,32 +61,41 @@ export function Hero() {
   const parallaxY = useTransform(
     scrollYProgress,
     [0, 1],
-    parallaxActive ? [0, -PARALLAX_RANGE_PX] : [0, 0],
+    parallaxActive ? [0, PARALLAX_RANGE_PX] : [0, 0],
   );
-
-  // Desktop/no-preference: masked line reveal + translateY stagger, both
-  // spring-driven. Reduced motion: opacity-only, no transform.
-  const itemVariant = reduceMotion ? fadeRise : staggerItem;
-  const lineVariant = reduceMotion ? fadeRise : maskedLineReveal;
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.55], reduceMotion ? [1, 1] : [1, 0]);
+  const contentY = useTransform(scrollYProgress, [0, 0.55], reduceMotion ? [0, 0] : [0, -CONTENT_EXIT_PX]);
 
   return (
     <section
       ref={sectionRef}
       className="relative isolate flex min-h-[max(100svh,640px)] flex-col overflow-hidden bg-ink-950"
     >
+      {/* Scroll parallax on the outer layer, one-time settle on the inner
+          one: separate elements so the CSS entrance and the scroll-linked
+          transform never fight over the same `transform`. */}
       <motion.div
-        className="absolute inset-0 -z-20 motion-reduce:!transform-none"
+        className="absolute inset-0 -z-20 will-change-transform motion-reduce:!transform-none"
         style={{ y: parallaxY }}
       >
-        <Image
-          src="/images/hero-wind-turbines-sunset.png"
-          alt="Wind turbines across an open landscape at sunset, representing APM Groups of Company's wind energy division"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[70%_50%]"
-        />
+        <div className="hero-settle absolute inset-0">
+          <Image
+            src="/images/hero-wind-turbines-sunset.png"
+            alt="Wind turbines across an open landscape at sunset, representing APM Groups of Company's wind energy division"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[70%_50%]"
+          />
+        </div>
       </motion.div>
+
+      {/* Ink veil that lifts off the photograph on load. It also masks the
+          priority image decoding in, so the picture never pops. */}
+      <div
+        className="hero-veil pointer-events-none absolute inset-0 -z-[15] bg-ink-950"
+        aria-hidden="true"
+      />
 
       {/* Mobile: uniform 72% dark scrim for guaranteed contrast. */}
       <div
@@ -101,15 +115,17 @@ export function Hero() {
 
       <div className="relative z-10 flex flex-1 flex-col">
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="site-container grid flex-1 grid-cols-1 items-center gap-10 pt-20 pb-10 lg:grid-cols-12 lg:pt-24 lg:pb-14"
+          className="flex flex-1 flex-col will-change-transform"
+          style={{ opacity: contentOpacity, y: contentY }}
         >
+        <div className="site-container grid flex-1 grid-cols-1 items-center gap-10 pt-20 pb-10 lg:grid-cols-12 lg:pt-24 lg:pb-14">
           <div className="col-span-1 lg:col-span-8">
-            <motion.div
-              variants={itemVariant}
-              className="inline-flex items-center gap-2 rounded-tick border border-copper-500/40 bg-ink-950/40 px-3 py-1.5 backdrop-blur-sm"
+            {/* No backdrop-blur here: a backdrop-filter on an element that is
+                moving re-blurs the photograph every frame and re-rasterises
+                when the move ends, which reads as a shimmer on landing. */}
+            <div
+              style={slot(0)}
+              className="hero-rise inline-flex items-center gap-2 rounded-tick border border-copper-500/40 bg-ink-950/55 px-3 py-1.5"
             >
               <span className="font-mono text-xs uppercase tracking-[0.18em] text-paper-50 sm:text-sm">
                 Established 1996
@@ -120,40 +136,46 @@ export function Hero() {
               <span className="font-mono text-xs uppercase tracking-[0.18em] text-copper-300 sm:text-sm">
                 APM Groups of Company
               </span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              variants={staggerContainer}
+            <h1
               className="mt-6 font-display font-extrabold uppercase leading-[0.98] tracking-tight"
               style={{ fontSize: "clamp(2.5rem, 1.464rem + 4.42vw, 5rem)" }}
             >
-              {HEADLINE_LINES.map((line) => (
+              {HEADLINE_LINES.map((line, index) => (
                 <span key={line.text} className="block overflow-hidden pb-1">
-                  <motion.span
-                    variants={lineVariant}
+                  <span
+                    style={slot(index + 1)}
                     className={cn(
-                      "block",
+                      "hero-line block",
                       line.accent ? "text-copper-500" : "text-paper-50",
                     )}
                   >
                     {line.text}
-                  </motion.span>
+                  </span>
                 </span>
               ))}
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              variants={itemVariant}
-              className="mt-6 max-w-[56ch] font-body text-base leading-relaxed text-paper-100/90 sm:text-lg"
+            {/* Horizon line: drawn once the headline has landed. */}
+            <span
+              style={slot(9)}
+              aria-hidden="true"
+              className="hero-draw horizon-line mt-6 block w-20 text-copper-500"
+            />
+
+            <p
+              style={slot(4)}
+              className="hero-rise mt-6 max-w-[56ch] font-body text-base leading-relaxed text-paper-100/90 sm:text-lg"
             >
               APM Groups of Company offers diversified business interests across
               Wind Energy, Plantation, Textiles, Construction, Steel Plant and
               Real Estate.
-            </motion.p>
+            </p>
 
-            <motion.div
-              variants={itemVariant}
-              className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
+            <div
+              style={slot(5)}
+              className="hero-rise mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
             >
               <Button
                 href="#divisions"
@@ -174,8 +196,9 @@ export function Hero() {
               >
                 Discover APM
               </Button>
-            </motion.div>
+            </div>
           </div>
+        </div>
         </motion.div>
 
         <div className="site-container pb-6 lg:pb-8">
