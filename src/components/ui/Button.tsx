@@ -60,7 +60,7 @@ const sizes: Record<Size, string> = {
 // use a spring (not a fixed-duration CSS tween) so the press is
 // interruptible — a rapid double-tap doesn't fight a half-finished
 // transition. Critically damped: feedback, not bounce.
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 export function Button({ variant = "primary", size = "md", className, children, href, ...props }: ButtonProps) {
   const classes = cn(base, variants[variant], sizes[size], className);
