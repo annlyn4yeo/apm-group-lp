@@ -6,19 +6,49 @@
 
 @layer base {
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; background: var(--navy-950); }
-  body { margin: 0; background: var(--paper-50); color: var(--navy-950); font-family: var(--font-source-sans), Arial, sans-serif; }
-  ::selection { background: var(--gold-500); color: var(--navy-950); }
-  :focus-visible { outline: 2px solid var(--gold-500); outline-offset: 4px; }
+  html { scroll-behavior: smooth; background: var(--ink-950); }
+  body { margin: 0; background: var(--paper-50); color: var(--ink-950); font-family: var(--font-body), Arial, sans-serif; }
+  ::selection { background: var(--copper-500); color: var(--ink-950); }
+  :focus-visible { outline: 2px solid var(--copper-500); outline-offset: 4px; }
 }
 
 @layer components {
   .site-container { width: min(100% - (2 * var(--site-gutter)), var(--site-max)); margin-inline: auto; }
-  .eyebrow { font-family: var(--font-plex-mono), monospace; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+
+  /* Navbar gets its own, wider well than body content. A 7-item nav
+     (6 links + Contact) plus the full wordmark is denser than a reading
+     column needs to be — capping it to the same 1280px as prose content
+     left it living right at the edge between 1024-1280px. 1440px gives it
+     real breathing room on larger screens; below that it still just fills
+     the viewport minus gutters, same as `.site-container`. */
+  .nav-container { width: min(100% - (2 * var(--site-gutter)), 1440px); margin-inline: auto; }
+
+  .eyebrow { font-family: var(--font-mono), monospace; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
   .horizon-line { height: 1px; transform-origin: left; background: currentColor; opacity: 0.45; }
+
+  /* Docked ticker: two duplicated tracks slide left by exactly half their
+     combined width, producing a seamless 45s loop. */
+  .ticker-track { animation: ticker-scroll 45s linear infinite; }
+
+  /* Primary CTA arrow nudge — gated to fine pointers with real hover so
+     touch devices never get a stuck/false hover state. Max 4px per the
+     motion contract's micro-interaction budget. */
+  @media (hover: hover) and (pointer: fine) {
+    .cta-arrow { transition: transform 160ms var(--ease-engineered); }
+    .group:hover .cta-arrow { transform: translateX(4px); }
+  }
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+
+  /* Higher-specificity override: stop the ticker outright instead of
+     letting it flash through a 45s loop in 0.01ms. */
+  .ticker-track { animation: none !important; transform: none !important; }
 }

@@ -3,6 +3,17 @@ node_modules/
 out/
 dist/
 *.tsbuildinfo
+.qa-shots/
+
+# Local source material
+APM Groups of Company_ Website Content Document.md
+APM Groups of Company.docx
+
+# Local environment and OS files
+.env*
+!.env.example
+.DS_Store
+Thumbs.db
 
 # Local design notes
 **/DESIGN.md
