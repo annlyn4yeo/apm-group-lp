@@ -34,3 +34,54 @@ export const FOUNDING_INTERESTS = [
 ] as const;
 
 export type OperatingDivision = (typeof OPERATING_DIVISIONS)[number];
+
+/**
+ * Capability lines for the Services section, keyed by canonical division name.
+ * Each list is the Services table description from the content document,
+ * split at its commas, so the copy is unchanged and only its shape differs.
+ */
+export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly string[]> = {
+  "APM Wind Energy": [
+    "Clean energy generation",
+    "Wind farm lifecycle management",
+    "Generator maintenance",
+    "Regional power grid transmission",
+  ],
+  "APM Plantation": [
+    "Large-scale horticulture",
+    "Cash crop farming",
+    "Sustainable agro-forestry",
+    "Soil preservation",
+    "Biological land stewardship",
+  ],
+  "APM Construction": [
+    "Institutional civil engineering",
+    "Infrastructure contracting",
+    "Utility corridors",
+    "Heavy reinforced commercial structures",
+  ],
+  "APM Real Estate": [
+    "Master-planned residential communities",
+    "Strategic urban property development",
+    "Land banking",
+    "Modern housing environments",
+  ],
+  "APM Plaza": [
+    "Prime retail destinations",
+    "Shopping complexes",
+    "High-footfall commercial plazas",
+    "Flexible institutional asset leasing",
+  ],
+  "APM Textiles": [
+    "High-specification spinning mills",
+    "Precision fabric manufacturing",
+    "Automated yarn spinning",
+    "Export supply chain logistics",
+  ],
+  "APM Steels": [
+    "Precision structural steel fabrication",
+    "High-yield industrial TMT rebars",
+    "Heavy metal distribution",
+    "Bulk commercial orders for infrastructure projects",
+  ],
+};

@@ -117,6 +117,79 @@
     .about-line, .about-draw { transform: none; }
   }
 
+  /* Services stage. All seven panels are always in the DOM, stacked in one
+     grid cell; `data-pos` says where each sits relative to the selected one
+     (before / current / after). Moving to a later service sends the old panel
+     up and brings the next one in from below, and the reverse going back, so
+     the change has a direction instead of a cross-dissolve. Transitions, not
+     keyframes: a fast hover sweep down the list retargets mid-flight instead
+     of restarting. Entering is slow and deliberate, leaving is quick.
+     `will-change` stays on so the text is not re-rasterised when a move ends
+     (same reasoning as the hero entrance). */
+  .service-panel {
+    --shift: 0px;
+    opacity: 0;
+    visibility: hidden;
+    filter: blur(3px);
+    transform: translateY(var(--shift));
+    transition:
+      opacity 160ms var(--ease-out-quart),
+      transform 160ms var(--ease-out-quart),
+      filter 160ms var(--ease-out-quart),
+      visibility 0s linear 160ms;
+    will-change: transform, opacity, filter;
+  }
+  .service-panel[data-pos="before"] { --shift: -18px; }
+  .service-panel[data-pos="after"] { --shift: 18px; }
+  .service-panel[data-pos="current"] {
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+    transition:
+      opacity 420ms var(--ease-out-quart),
+      transform 520ms var(--ease-out-quart),
+      filter 420ms var(--ease-out-quart),
+      visibility 0s;
+  }
+
+  /* Inside a panel: the icon settles, the capability lines cascade in at
+     55ms intervals, and the large numeral travels twice as far as the panel
+     (the depth cue). `--i` is each element's stagger slot. */
+  .service-item,
+  .service-icon,
+  .service-glyph {
+    transition: opacity 120ms var(--ease-out-quart), transform 120ms var(--ease-out-quart);
+  }
+  .service-item { opacity: 0; transform: translateY(10px); }
+  .service-icon { opacity: 0; transform: scale(0.88); }
+  .service-glyph { opacity: 0; transform: translateY(calc(var(--shift) * 2)); }
+
+  .service-panel[data-pos="current"] .service-item {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 420ms var(--ease-out-quart) calc(var(--i, 0) * 55ms + 120ms),
+      transform 520ms var(--ease-out-quart) calc(var(--i, 0) * 55ms + 120ms);
+  }
+  .service-panel[data-pos="current"] .service-icon {
+    opacity: 1;
+    transform: none;
+    transition: opacity 420ms var(--ease-out-quart) 60ms, transform 520ms var(--ease-out-quart) 60ms;
+  }
+  .service-panel[data-pos="current"] .service-glyph {
+    opacity: 1;
+    transform: none;
+    transition: opacity 600ms var(--ease-out-quart) 80ms, transform 700ms var(--ease-out-quart) 80ms;
+  }
+
+  /* The copper mark on the list rail: a single element that slides to the
+     selected row (rows are equal height), so moving through the list reads as
+     one object travelling rather than rows lighting up one by one. */
+  .service-mark {
+    transition: transform 420ms var(--ease-out-quart);
+    will-change: transform;
+  }
+
   /* Ticker edges dissolve instead of clipping hard against the viewport. */
   .ticker-mask {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
@@ -240,6 +313,27 @@
     will-change: opacity;
   }
   .hero-settle { animation: none; will-change: auto; }
+
+  /* Services: panels crossfade in place (no travel, blur or stagger). Class
+     plus attribute selectors beat the universal 0.01ms rule above. */
+  .service-panel,
+  .service-panel[data-pos="current"] {
+    transform: none;
+    filter: none;
+    will-change: opacity;
+  }
+  .service-panel { transition: opacity 200ms ease-out, visibility 0s linear 200ms !important; }
+  .service-panel[data-pos="current"] { transition: opacity 200ms ease-out, visibility 0s !important; }
+  .service-item,
+  .service-icon,
+  .service-glyph,
+  .service-panel[data-pos="current"] .service-item,
+  .service-panel[data-pos="current"] .service-icon,
+  .service-panel[data-pos="current"] .service-glyph {
+    opacity: 1;
+    transform: none;
+    transition: none !important;
+  }
 
   /* About: opacity fade only, no rise, line-mask or rule draw. */
   .about-line, .about-draw { transform: none; opacity: 0; will-change: opacity; }

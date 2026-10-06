@@ -89,10 +89,9 @@ export function About() {
   // Progress is measured from the story's real on-screen box (framer's
   // `useScroll` target offsets ignore transforms, and About is held back by
   // one). 0 when the story's top reaches 80% of the viewport, 1 when its
-  // bottom reaches 85%. That end has to be reachable at the bottom of the
-  // page: with About the last section there is only ~350px below the story,
-  // so its end can never rise above ~60% of a desktop viewport. Revisit if
-  // the tail below the story shrinks.
+  // bottom reaches 85%. That end has to stay reachable wherever the page
+  // ends: the story must be able to scroll up to 85% of the viewport. Services
+  // now follows About, so there is plenty of page below it.
   const railFill = useMotionValue(reduceMotion ? 1 : 0);
   useEffect(() => {
     const story = storyRef.current;
