@@ -1,0 +1,24 @@
+@import "./design-tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; background: var(--navy-950); }
+  body { margin: 0; background: var(--paper-50); color: var(--navy-950); font-family: var(--font-source-sans), Arial, sans-serif; }
+  ::selection { background: var(--gold-500); color: var(--navy-950); }
+  :focus-visible { outline: 2px solid var(--gold-500); outline-offset: 4px; }
+}
+
+@layer components {
+  .site-container { width: min(100% - (2 * var(--site-gutter)), var(--site-max)); margin-inline: auto; }
+  .eyebrow { font-family: var(--font-plex-mono), monospace; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+  .horizon-line { height: 1px; transform-origin: left; background: currentColor; opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}

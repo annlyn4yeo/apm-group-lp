@@ -1,0 +1,24 @@
+:root {
+  --navy-950: #050b16;
+  --navy-900: #0a1628;
+  --navy-800: #102038;
+  --navy-700: #1a3354;
+  --green-950: #04140e;
+  --green-900: #0b2f22;
+  --green-700: #155a41;
+  --green-300: #86d6b2;
+  --gold-700: #8a6310;
+  --gold-500: #d9a63a;
+  --gold-300: #ebc766;
+  --paper-100: #f4f0e6;
+  --paper-50: #fbf9f4;
+  --radius-chip: 2px;
+  --radius-control: 4px;
+  --radius-container: 8px;
+  --site-gutter: clamp(20px, 4vw, 48px);
+  --site-max: 1280px;
+  --ease-mass: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-direct: 180ms;
+  --duration-reveal: 600ms;
+  --duration-draw: 900ms;
+}

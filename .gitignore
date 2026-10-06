@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Local design notes
+**/DESIGN.md
+**/design.md
