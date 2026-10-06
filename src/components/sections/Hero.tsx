@@ -2,9 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { cn } from "@/lib/utils";
-import { fadeRise, maskedLineReveal, staggerContainer, staggerItem } from "@/lib/animations";
+import {
+  fadeRise,
+  maskedLineReveal,
+  staggerContainer,
+  staggerItem,
+} from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Ticker } from "@/components/ui/Ticker";
 
@@ -74,7 +84,10 @@ export function Hero() {
       </motion.div>
 
       {/* Mobile: uniform 72% dark scrim for guaranteed contrast. */}
-      <div className="absolute inset-0 -z-10 bg-ink-950/[0.72] lg:hidden" aria-hidden="true" />
+      <div
+        className="absolute inset-0 -z-10 bg-ink-950/[0.72] lg:hidden"
+        aria-hidden="true"
+      />
 
       {/* Desktop: left-weighted radial gradient (82% left -> 25% right). */}
       <div
@@ -99,7 +112,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 rounded-tick border border-copper-500/40 bg-ink-950/40 px-3 py-1.5 backdrop-blur-sm"
             >
               <span className="font-mono text-xs uppercase tracking-[0.18em] text-paper-50 sm:text-sm">
-                Established 1994
+                Established 1996
               </span>
               <span aria-hidden="true" className="text-copper-500">
                 •
@@ -118,7 +131,10 @@ export function Hero() {
                 <span key={line.text} className="block overflow-hidden pb-1">
                   <motion.span
                     variants={lineVariant}
-                    className={cn("block", line.accent ? "text-copper-500" : "text-paper-50")}
+                    className={cn(
+                      "block",
+                      line.accent ? "text-copper-500" : "text-paper-50",
+                    )}
                   >
                     {line.text}
                   </motion.span>
@@ -130,21 +146,32 @@ export function Hero() {
               variants={itemVariant}
               className="mt-6 max-w-[56ch] font-body text-base leading-relaxed text-paper-100/90 sm:text-lg"
             >
-              APM Groups of Company offers diversified business interests across Wind Energy,
-              Plantation, Textiles, Construction, Steel Plant and Real Estate.
+              APM Groups of Company offers diversified business interests across
+              Wind Energy, Plantation, Textiles, Construction, Steel Plant and
+              Real Estate.
             </motion.p>
 
             <motion.div
               variants={itemVariant}
               className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
             >
-              <Button href="#divisions" variant="primary" size="md" className="group w-full sm:w-auto">
+              <Button
+                href="#divisions"
+                variant="primary"
+                size="md"
+                className="group w-full sm:w-auto"
+              >
                 Explore Our Businesses
                 <span aria-hidden="true" className="cta-arrow inline-block">
                   →
                 </span>
               </Button>
-              <Button href="#about" variant="outline" size="md" className="w-full sm:w-auto">
+              <Button
+                href="#about"
+                variant="outline"
+                size="md"
+                className="w-full sm:w-auto"
+              >
                 Discover APM
               </Button>
             </motion.div>
@@ -155,7 +182,10 @@ export function Hero() {
           <div className="flex justify-center lg:justify-start">
             <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-50/70 sm:text-xs">
               Scroll to explore
-              <span aria-hidden="true" className="animate-signal-pulse motion-reduce:animate-none">
+              <span
+                aria-hidden="true"
+                className="animate-signal-pulse motion-reduce:animate-none"
+              >
                 ↓
               </span>
             </span>
