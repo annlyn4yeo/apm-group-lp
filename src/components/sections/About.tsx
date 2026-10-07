@@ -125,7 +125,7 @@ export function About() {
       {/* Shadow the section casts onto the pinned hero as it slides over. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-ink-950/45 to-transparent"
+        className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-shade to-transparent"
       />
 
       <div

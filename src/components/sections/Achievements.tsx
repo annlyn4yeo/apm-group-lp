@@ -148,7 +148,7 @@ function Slide({
           style={{
             ...slot(2),
             backgroundImage:
-              "linear-gradient(to right, var(--copper-300) 0 6rem, var(--verdigris-700) 6rem)",
+              "linear-gradient(to right, rgb(var(--copper-300)) 0 6rem, rgb(var(--verdigris-700)) 6rem)",
           }}
           className="award-rule block h-px w-full"
         />

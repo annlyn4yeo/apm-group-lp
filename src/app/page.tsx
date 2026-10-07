@@ -44,12 +44,12 @@ export default function HomePage() {
           <div data-rise-wrap className="contact-wrap relative z-10">
             <div
               id="contact"
-              className="stage-contact on-copper relative bg-copper-500 text-ink-950"
+              className="stage-contact on-copper relative bg-panel text-ink-950"
             >
               {/* Shadow the panel casts onto the pinned Gallery as it rises. */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-ink-950/45 to-transparent"
+                className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-shade to-transparent"
               />
               <Contact />
               <Footer />

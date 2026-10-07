@@ -22,6 +22,7 @@ import {
 import { engineeredEase, springSettle, springIndicator } from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
 import { Logomark } from "@/components/ui/Logomark";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 // Contact has no text link: it is the CTA button. It is still watched, so the
 // Gallery does not stay marked as current while the Contact panel covers it.
@@ -156,29 +157,35 @@ export function Navbar() {
                 {CONTACT_LINK.label}
               </Button>
             </span>
+            {/* The switch's own hit area is padded, so pull it in to keep
+                the visible gap to the CTA the same as between the links. */}
+            <ThemeToggle className="-mr-1" />
           </nav>
 
-          <button
-            type="button"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-nav"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMenuOpen((open) => !open)}
-            className="relative flex h-11 w-11 items-center justify-center text-paper-50 lg:hidden"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={menuOpen ? "close" : "open"}
-                className="flex"
-                initial={iconSwap.initial}
-                animate={iconSwap.animate}
-                exit={iconSwap.exit}
-                transition={iconSwap.transition}
-              >
-                {menuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
-              </motion.span>
-            </AnimatePresence>
-          </button>
+          <div className="flex items-center lg:hidden">
+            <ThemeToggle />
+            <button
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMenuOpen((open) => !open)}
+              className="relative flex h-11 w-11 items-center justify-center text-paper-50"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={menuOpen ? "close" : "open"}
+                  className="flex"
+                  initial={iconSwap.initial}
+                  animate={iconSwap.animate}
+                  exit={iconSwap.exit}
+                  transition={iconSwap.transition}
+                >
+                  {menuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -196,7 +203,8 @@ export function Navbar() {
             transition={{ duration: 0.24, ease: engineeredEase }}
             className="fixed inset-0 z-[60] flex flex-col bg-ink-950 lg:hidden"
           >
-            <div className="site-container flex h-16 items-center justify-end">
+            <div className="site-container flex h-16 items-center justify-between">
+              <ThemeToggle />
               <button
                 type="button"
                 onClick={closeMenu}

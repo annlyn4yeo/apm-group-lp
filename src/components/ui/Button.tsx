@@ -46,14 +46,14 @@ const base =
 const variants: Record<Variant, string> = {
   // Copper is a mid-bright warm hue — dark ink text reads far better on it
   // than light text does (the opposite pairing read as too low-contrast).
-  primary: "border-copper-600 bg-copper-600 text-ink-950 [--sweep:#c06430] hover:border-copper-500",
+  primary: "border-copper-600 bg-copper-600 text-ink-950 [--sweep:rgb(var(--copper-500))] hover:border-copper-500",
   outline:
-    "border-paper-50/70 border-[1.5px] bg-transparent text-paper-50 [--sweep:rgb(232_162_115/0.14)] hover:border-copper-300 hover:text-copper-300",
+    "border-paper-50/70 border-[1.5px] bg-transparent text-paper-50 [--sweep:rgb(var(--copper-300)/0.14)] hover:border-copper-300 hover:text-copper-300",
   // For ink surfaces sitting on the copper Contact panel, where the primary
   // copper-600 button would sink into the panel's own colour. copper-300 with
   // ink text is about 9:1; the sweep turns it paper on hover.
   light:
-    "border-copper-300 bg-copper-300 text-ink-950 [--sweep:#f7f5f1] hover:border-paper-50",
+    "border-copper-300 bg-copper-300 text-ink-950 [--sweep:rgb(var(--paper-50))] hover:border-paper-50",
 };
 
 const sizes: Record<Size, string> = {

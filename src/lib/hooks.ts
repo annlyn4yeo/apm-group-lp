@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type RefObject } from "react";
 import { useMotionValue, useScroll, type MotionValue } from "framer-motion";
+import { DEFAULT_THEME, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
 
 /**
  * Scroll distance, in px, over which the About section finishes rising over
@@ -250,4 +251,40 @@ export function useFocusTrap(
       previouslyFocused.current?.focus();
     };
   }, [active, containerRef, onClose]);
+}
+
+// The `data-theme` attribute on <html> is the single source of truth for the
+// theme: CSS reads it directly (design-tokens.css) and React subscribes to it,
+// so every light switch on the page stays in step without shared state.
+const readTheme = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
+/** The active theme. The default on the server and the first client render. */
+export function useTheme(): Theme {
+  return useSyncExternalStore(subscribeTheme, readTheme, () => DEFAULT_THEME);
+}
+
+/**
+ * Switches theme. Where the View Transitions API exists the browser snapshots
+ * the page and crossfades to the new one (see globals.css), which is smoother
+ * than transitioning every element's colours and costs nothing per element;
+ * elsewhere the change is simply instant.
+ */
+export function setTheme(next: Theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, next);
+  } catch {
+    // Storage blocked (private mode, site data off): the switch still works
+    // for this visit, it just is not remembered.
+  }
+  const apply = () => {
+    document.documentElement.dataset.theme = next;
+  };
+  if (typeof document.startViewTransition === "function") document.startViewTransition(apply);
+  else apply();
 }

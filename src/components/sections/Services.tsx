@@ -50,7 +50,7 @@ export function Services() {
   const pointerY = useMotionValue(0);
   const lightX = useSpring(pointerX, SPOTLIGHT_SPRING);
   const lightY = useSpring(pointerY, SPOTLIGHT_SPRING);
-  const light = useMotionTemplate`radial-gradient(380px circle at ${lightX}px ${lightY}px, rgb(232 162 115 / 0.12), transparent 70%)`;
+  const light = useMotionTemplate`radial-gradient(380px circle at ${lightX}px ${lightY}px, rgb(var(--copper-300) / 0.12), transparent 70%)`;
 
   const moveLight = (event: PointerEvent<HTMLDivElement>, snap: boolean) => {
     if (event.pointerType !== "mouse") return;

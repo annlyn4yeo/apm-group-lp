@@ -50,7 +50,7 @@ export function Hero() {
 
       {/* Mobile: uniform 72% dark scrim for guaranteed contrast. */}
       <div
-        className="absolute inset-0 -z-10 bg-ink-950/[0.72] lg:hidden"
+        className="absolute inset-0 -z-10 bg-ink-950/[var(--hero-scrim-mobile)] lg:hidden"
         aria-hidden="true"
       />
 
@@ -60,7 +60,7 @@ export function Hero() {
         aria-hidden="true"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 85% 120% at 16% 45%, rgba(21,19,14,0.84) 0%, rgba(21,19,14,0.56) 45%, rgba(21,19,14,0.26) 78%)",
+            "radial-gradient(ellipse 85% 120% at 16% 45%, rgb(var(--ink-950) / var(--hero-scrim-start)) 0%, rgb(var(--ink-950) / var(--hero-scrim-mid)) 45%, rgb(var(--ink-950) / var(--hero-scrim-end)) 78%)",
         }}
       />
 

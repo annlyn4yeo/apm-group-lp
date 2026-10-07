@@ -1,18 +1,129 @@
+/* ───────────────────────────────────────────────────────────────────────
+   COLOUR
+   Three layers, so a colour only ever has to be changed in one place:
+
+   1. Swatches   --swatch-*   The raw palette. Space-separated RGB channels
+                              (not hex) so Tailwind's `/50` alpha modifiers
+                              work on them. Components never read these.
+   2. Roles      --ink-950 …  What the swatches are *for*. Components (and
+                              tailwind.config.ts) only read these, as
+                              `rgb(var(--ink-950) / <alpha>)`.
+   3. Themes     below        Each theme assigns a swatch to every role.
+
+   The role names keep the scale they were born with and read as roles, not
+   literal colours: `ink-950` is the deepest surface (`ink-900/800/700` the
+   other surfaces and hairlines), `verdigris-950` / `verdigris-900` raised and
+   section surfaces, `verdigris-700` a hairline, `verdigris-300` secondary
+   text, `paper-50` primary text, `paper-100` body text, `copper-300` accent
+   text, `copper-500` / `copper-600` accent fills. Dark is the original look;
+   light reverses the scales (a deep surface becomes a pale one, light text
+   becomes ink).
+
+   Themes are switched with `data-theme` on <html>. The page ships as light
+   (layout.tsx sets it); dark is what you get with the value "dark" or none.
+   ─────────────────────────────────────────────────────────────────────── */
 :root {
-  --ink-950: #15130e;
-  --ink-900: #1e1b14;
-  --ink-800: #29241b;
-  --ink-700: #3a3326;
-  --verdigris-950: #0f201b;
-  --verdigris-900: #1c3a32;
-  --verdigris-700: #2e5a4c;
-  --verdigris-300: #96c9b7;
-  --copper-700: #8a3d1b;
-  --copper-600: #a8501f;
-  --copper-500: #c06430;
-  --copper-300: #e8a273;
-  --paper-100: #ece7dc;
-  --paper-50: #f7f5f1;
+  /* Swatches: the original palette. */
+  --swatch-ink-950: 21 19 14;
+  --swatch-ink-900: 30 27 20;
+  --swatch-ink-800: 41 36 27;
+  --swatch-ink-700: 58 51 38;
+  --swatch-verdigris-950: 15 32 27;
+  --swatch-verdigris-900: 28 58 50;
+  --swatch-verdigris-700: 46 90 76;
+  --swatch-verdigris-300: 150 201 183;
+  --swatch-copper-700: 138 61 27;
+  --swatch-copper-600: 168 80 31;
+  --swatch-copper-500: 192 100 48;
+  --swatch-copper-300: 232 162 115;
+  --swatch-paper-100: 236 231 220;
+  --swatch-paper-50: 247 245 241;
+
+  /* Swatches: the daylight extension, the same families pushed pale. */
+  --swatch-paper-300: 214 207 191;
+  --swatch-verdigris-200: 170 192 180;
+  --swatch-verdigris-100: 226 234 229;
+  --swatch-verdigris-50: 241 245 242;
+  --swatch-copper-100: 241 224 208;
+}
+
+/* Dark: the original look. It is also what the Contact panel keeps in light
+   mode for its text: ink on the panel, whatever the panel's own ground
+   (`--panel`). */
+:root,
+:root[data-theme="light"] .on-copper {
+  --ink-950: var(--swatch-ink-950);
+  --ink-900: var(--swatch-ink-900);
+  --ink-800: var(--swatch-ink-800);
+  --ink-700: var(--swatch-ink-700);
+  --verdigris-950: var(--swatch-verdigris-950);
+  --verdigris-900: var(--swatch-verdigris-900);
+  --verdigris-700: var(--swatch-verdigris-700);
+  --verdigris-300: var(--swatch-verdigris-300);
+  --copper-700: var(--swatch-copper-700);
+  --copper-600: var(--swatch-copper-600);
+  --copper-500: var(--swatch-copper-500);
+  --copper-300: var(--swatch-copper-300);
+  --paper-100: var(--swatch-paper-100);
+  --paper-50: var(--swatch-paper-50);
+}
+
+/* Light. Surfaces go to paper and a pale verdigris wash, text goes to ink,
+   and accent text deepens to copper-700 so it holds contrast on pale ground.
+   The copper fills (500/600) are unchanged: they are the brand. The Contact
+   panel is a pale copper tint (`--panel`) with ink text, and its enquiry
+   sheet takes this mapping back, so it reads as a paper sheet on that tint. */
+:root[data-theme="light"],
+:root[data-theme="light"] .on-copper .on-ink {
+  --ink-950: var(--swatch-paper-50);
+  --ink-900: var(--swatch-paper-50);
+  --ink-800: var(--swatch-paper-100);
+  --ink-700: var(--swatch-paper-300);
+  --verdigris-950: var(--swatch-verdigris-50);
+  --verdigris-900: var(--swatch-verdigris-100);
+  --verdigris-700: var(--swatch-verdigris-200);
+  --verdigris-300: var(--swatch-verdigris-700);
+  --copper-700: var(--swatch-copper-700);
+  --copper-600: var(--swatch-copper-600);
+  --copper-500: var(--swatch-copper-500);
+  --copper-300: var(--swatch-copper-700);
+  --paper-100: var(--swatch-ink-800);
+  --paper-50: var(--swatch-ink-950);
+}
+
+/* Effects that are tuned per theme rather than mapped from a swatch. These
+   follow the page theme everywhere, including inside the Contact panel, so
+   they live outside the blocks above. */
+:root {
+  /* The shadow a section casts onto the one it slides over: colour, strength. */
+  --shade: var(--swatch-ink-950);
+  --shade-alpha: 0.45;
+
+  /* The Contact panel: the copper plate the page ends on. Its text is pinned
+     to ink in both themes (see `.on-copper` above), so only this ground moves. */
+  --panel: var(--swatch-copper-500);
+
+  /* Hero photograph scrims. Mobile is one flat layer; desktop is a
+     left-weighted radial, strongest behind the headline and lightest at the
+     far edge. */
+  --hero-scrim-mobile: 0.72;
+  --hero-scrim-start: 0.84;
+  --hero-scrim-mid: 0.56;
+  --hero-scrim-end: 0.26;
+}
+
+:root[data-theme="light"] {
+  --shade: var(--swatch-ink-800);
+  --shade-alpha: 0.16;
+  --panel: var(--swatch-copper-100);
+
+  --hero-scrim-mobile: 0.82;
+  --hero-scrim-start: 0.92;
+  --hero-scrim-mid: 0.74;
+  --hero-scrim-end: 0.5;
+}
+
+:root {
   --radius-tick: 2px;
   /* Fixed height of the ticker band. The hero reserves it, and the About
      section is pulled up by exactly this much so the ticker becomes the

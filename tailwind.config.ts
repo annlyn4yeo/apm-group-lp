@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+const themed = (token: string) => `rgb(var(--${token}) / <alpha-value>)`;
+
 const config: Config = {
   // Every `hover:` variant only applies on devices that can actually hover,
   // so taps on touch screens never leave a stuck hover state behind.
@@ -9,10 +11,16 @@ const config: Config = {
     container: { center: true, padding: "clamp(20px, 4vw, 48px)", screens: { "2xl": "1280px" } },
     extend: {
       colors: {
-        ink: { 950: "#15130E", 900: "#1E1B14", 800: "#29241B", 700: "#3A3326" },
-        verdigris: { 950: "#0F201B", 900: "#1C3A32", 700: "#2E5A4C", 300: "#96C9B7" },
-        copper: { 700: "#8A3D1B", 600: "#A8501F", 500: "#C06430", 300: "#E8A273" },
-        paper: { 100: "#ECE7DC", 50: "#F7F5F1" },
+        // Colours are theme roles, not literals: each reads a channel triplet
+        // from design-tokens.css, so the same class re-colours with the theme
+        // and `/50` alpha modifiers still work. Change colours there.
+        ink: { 950: themed("ink-950"), 900: themed("ink-900"), 800: themed("ink-800"), 700: themed("ink-700") },
+        verdigris: { 950: themed("verdigris-950"), 900: themed("verdigris-900"), 700: themed("verdigris-700"), 300: themed("verdigris-300") },
+        copper: { 700: themed("copper-700"), 600: themed("copper-600"), 500: themed("copper-500"), 300: themed("copper-300") },
+        paper: { 100: themed("paper-100"), 50: themed("paper-50") },
+        // Already carries its own strength (--shade-alpha), so it takes no /alpha.
+        shade: "rgb(var(--shade) / var(--shade-alpha))",
+        panel: themed("panel"),
       },
       fontFamily: {
         display: ["var(--font-display)", "Arial Narrow", "sans-serif"],

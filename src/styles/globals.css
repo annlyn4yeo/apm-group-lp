@@ -6,16 +6,18 @@
 
 @layer base {
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; background: var(--ink-950); }
-  body { margin: 0; background: var(--paper-50); color: var(--ink-950); font-family: var(--font-body), Arial, sans-serif; }
-  ::selection { background: var(--copper-500); color: var(--ink-950); }
-  :focus-visible { outline: 2px solid var(--copper-500); outline-offset: 4px; }
+  html { scroll-behavior: smooth; background: rgb(var(--ink-950)); }
+  /* Body keeps the paper/ink pair in both themes: it is a fixed canvas, fully
+     covered by the themed sections, so it reads the swatches directly. */
+  body { margin: 0; background: rgb(var(--swatch-paper-50)); color: rgb(var(--swatch-ink-950)); font-family: var(--font-body), Arial, sans-serif; }
+  ::selection { background: rgb(var(--copper-500)); color: rgb(var(--ink-950)); }
+  :focus-visible { outline: 2px solid rgb(var(--copper-500)); outline-offset: 4px; }
   /* Copper focus rings disappear on the copper Contact panel. */
-  .on-copper :focus-visible { outline-color: var(--ink-950); }
-  .on-copper ::selection { background: var(--ink-950); color: var(--copper-300); }
+  .on-copper :focus-visible { outline-color: rgb(var(--ink-950)); }
+  .on-copper ::selection { background: rgb(var(--ink-950)); color: rgb(var(--copper-300)); }
   /* ...and the ink enquiry sheet inside it wants the light copper. */
-  .on-copper .on-ink :focus-visible { outline-color: var(--copper-300); }
-  .on-copper .on-ink ::selection { background: var(--copper-300); color: var(--ink-950); }
+  .on-copper .on-ink :focus-visible { outline-color: rgb(var(--copper-300)); }
+  .on-copper .on-ink ::selection { background: rgb(var(--copper-300)); color: rgb(var(--ink-950)); }
 }
 
 @layer components {
@@ -63,6 +65,18 @@
     .btn-sweep:hover::before { transform: scaleX(1); transform-origin: left; }
   }
   .btn-sweep:focus-visible::before { transform: scaleX(1); transform-origin: left; }
+
+  /* Light switch (ThemeToggle). The knob travels the track (50px wide, 1px
+     border, 3px inset, 18px knob = 24px of travel) and the O / I mark swaps
+     as it goes. Everything keys off <html data-theme>, so the switch is
+     already in its new state when the page crossfades to the new theme. */
+  .theme-switch-knob { transition: transform 200ms var(--ease-out-quart); }
+  .theme-switch-off,
+  .theme-switch-on { transition: opacity 160ms var(--ease-out-quart), transform 200ms var(--ease-out-quart); }
+  .theme-switch-on { opacity: 0; transform: scale(0.6); }
+  :root[data-theme="light"] .theme-switch-knob { transform: translateX(24px); }
+  :root[data-theme="light"] .theme-switch-off { opacity: 0; transform: scale(0.6); }
+  :root[data-theme="light"] .theme-switch-on { opacity: 1; transform: none; }
 
   /* Hero entrance, one-time (not a loop). Pure CSS keyframes so it runs on
      the compositor from first paint (no waiting for hydration, no main
@@ -237,15 +251,15 @@
      lg up they stand side by side, the panel overlays the plate, and the
      name turns from a vertical label into the headline. */
   .biz-plate {
-    --biz-line: rgb(150 201 183 / 0.16);
-    --biz-warm: rgb(232 162 115 / 0.22);
+    --biz-line: rgb(var(--verdigris-300) / 0.16);
+    --biz-warm: rgb(var(--copper-300) / 0.22);
     position: relative;
     display: grid;
     grid-template-columns: 2.25rem minmax(0, 1fr) auto;
     align-items: center;
     padding-inline: 1.25rem;
     overflow: hidden;
-    background: var(--verdigris-950);
+    background: rgb(var(--verdigris-950));
     cursor: pointer;
     scroll-margin-top: 6rem;
     -webkit-tap-highlight-color: transparent;
@@ -271,7 +285,7 @@
   .biz-wash {
     inset: 0;
     opacity: 0;
-    background: radial-gradient(120% 80% at 0% 100%, rgb(192 100 48 / 0.2), transparent 65%);
+    background: radial-gradient(120% 80% at 0% 100%, rgb(var(--copper-500) / 0.2), transparent 65%);
     transition: opacity 300ms var(--ease-out-quart);
   }
   .biz-plate[data-active="true"] .biz-material {
@@ -291,10 +305,10 @@
     line-height: 1;
     letter-spacing: 0.18em;
     font-variant-numeric: tabular-nums;
-    color: var(--verdigris-300);
+    color: rgb(var(--verdigris-300));
     transition: color 200ms var(--ease-out-quart);
   }
-  .biz-plate[data-active="true"] .biz-index { color: var(--copper-300); }
+  .biz-plate[data-active="true"] .biz-index { color: rgb(var(--copper-300)); }
 
   .biz-name {
     margin: 0;
@@ -305,17 +319,17 @@
     line-height: 1;
     letter-spacing: -0.01em;
     text-transform: uppercase;
-    color: rgb(247 245 241 / 0.88);
+    color: rgb(var(--paper-50) / 0.88);
     transition: color 300ms var(--ease-out-quart);
   }
-  .biz-plate[data-active="true"] .biz-name { color: var(--paper-50); }
+  .biz-plate[data-active="true"] .biz-name { color: rgb(var(--paper-50)); }
 
   .biz-toggle {
     display: flex;
-    color: var(--verdigris-300);
+    color: rgb(var(--verdigris-300));
     transition: transform 300ms var(--ease-out-quart), color 200ms var(--ease-out-quart);
   }
-  .biz-plate[data-active="true"] .biz-toggle { transform: rotate(90deg); color: var(--copper-300); }
+  .biz-plate[data-active="true"] .biz-toggle { transform: rotate(90deg); color: rgb(var(--copper-300)); }
 
   .biz-panel {
     grid-column: 1 / -1;
@@ -342,7 +356,7 @@
     line-height: 1rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--copper-300);
+    color: rgb(var(--copper-300));
   }
   .biz-dim-label > span {
     display: block;
@@ -354,7 +368,7 @@
     flex: 1 1 0;
     min-width: 0;
     height: 1px;
-    background: var(--copper-300);
+    background: rgb(var(--copper-300));
     opacity: 0.7;
     transform: scaleX(0);
     transition: transform 140ms var(--ease-out-quart);
@@ -366,7 +380,7 @@
     flex: none;
     width: 1px;
     height: 0.75rem;
-    background: var(--copper-300);
+    background: rgb(var(--copper-300));
     transform: scaleY(0);
     transition: transform 140ms var(--ease-out-quart);
     will-change: transform;
@@ -401,7 +415,7 @@
   .biz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
   .biz-chips li {
     padding: 0.25rem 0.625rem;
-    border: 1px solid var(--verdigris-700);
+    border: 1px solid rgb(var(--verdigris-700));
     border-radius: var(--radius-tick);
     font-family: var(--font-mono), monospace;
     font-size: 0.6875rem;
@@ -409,7 +423,7 @@
     line-height: 1.25rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgb(236 231 220 / 0.85);
+    color: rgb(var(--paper-100) / 0.85);
   }
   .biz-cta { margin-top: 1.5rem; }
 
@@ -514,7 +528,7 @@
   .biz-pattern-plaza {
     background:
       repeating-linear-gradient(90deg, var(--biz-warm) 0 1px, transparent 1px 44px),
-      repeating-linear-gradient(90deg, rgb(150 201 183 / 0.07) 0 22px, transparent 22px 44px);
+      repeating-linear-gradient(90deg, rgb(var(--verdigris-300) / 0.07) 0 22px, transparent 22px 44px);
   }
   /* Textiles: warp in verdigris, weft in copper. */
   .biz-pattern-textiles {
@@ -680,6 +694,18 @@
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
+}
+
+/* Theme change. The browser snapshots the page and crossfades old to new
+   (View Transitions API, started in setTheme), so no element needs its own
+   colour transition and nothing mid-animation is disturbed. Opacity only, so
+   it also stays for reduced motion; browsers without the API switch at once.
+   The easing stays linear on purpose: the two layers blend additively, so a
+   linear fade keeps their combined opacity at exactly 1 and the page never
+   dips mid-change. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
 }
 
 @media (prefers-reduced-motion: reduce) {

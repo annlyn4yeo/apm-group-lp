@@ -68,7 +68,7 @@ function Field({
 }
 
 const INPUT =
-  "block w-full appearance-none rounded-none border-0 border-b border-paper-100/40 bg-transparent px-0 py-3 font-body text-lg text-paper-50 placeholder:text-paper-100/60 focus:outline-none [&:-webkit-autofill]:[-webkit-text-fill-color:var(--paper-50)] [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_var(--ink-950)]";
+  "block w-full appearance-none rounded-none border-0 border-b border-paper-100/40 bg-transparent px-0 py-3 font-body text-lg text-paper-50 placeholder:text-paper-100/60 focus:outline-none [&:-webkit-autofill]:[-webkit-text-fill-color:rgb(var(--paper-50))] [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_rgb(var(--ink-950))]";
 
 export function Contact() {
   const [headerRef, headerRevealed] = useRevealOnce<HTMLDivElement>();
@@ -97,7 +97,7 @@ export function Contact() {
                   style={slot(index)}
                   className={
                     line.outlined
-                      ? "about-line block text-transparent [-webkit-text-stroke:2px_var(--ink-950)]"
+                      ? "about-line block text-transparent [-webkit-text-stroke:2px_rgb(var(--ink-950))]"
                       : "about-line block text-ink-950"
                   }
                 >

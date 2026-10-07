@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Big_Shoulders, JetBrains_Mono, Work_Sans } from "next/font/google";
 import "@/styles/globals.css";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { DEFAULT_THEME, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 // Big Shoulders: a condensed, bold industrial display face (Chicago
 // ironwork/skyscraper lettering) — thematically correct for a steel,
@@ -24,5 +25,8 @@ export const metadata: Metadata = {
 const organizationSchema = { "@context": "https://schema.org", "@type": ["Organization", "LocalBusiness"], name: SITE_NAME, url: SITE_URL, description: SITE_DESCRIPTION, areaServed: "India", sameAs: [] };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}><body className="overflow-x-hidden">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} /></body></html>;
+  // suppressHydrationWarning: the theme script sets `data-theme` on <html>
+  // before React hydrates when the visitor has saved the other theme, which is
+  // the one thing the server cannot know.
+  return <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-theme={DEFAULT_THEME} suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} /></head><body className="overflow-x-hidden">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} /></body></html>;
 }
