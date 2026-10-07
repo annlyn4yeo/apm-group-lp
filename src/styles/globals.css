@@ -220,6 +220,309 @@
     .award-line, .award-rule, .award-fade { transform: none; opacity: 1; }
   }
 
+  /* Our Business rail. Seven plates; the open one is `data-active`. Every
+     state change is a transition, so a pointer sweeping along the rail
+     retargets mid-flight instead of restarting. Entering is slow and
+     deliberate, leaving is quick, and `will-change` stays on the moving
+     text so it is not re-rasterised when a move ends.
+
+     Below lg the plates stack as an accordion: a header row (index, name,
+     chevron) and a panel that opens with grid-template-rows 0fr to 1fr. From
+     lg up they stand side by side, the panel overlays the plate, and the
+     name turns from a vertical label into the headline. */
+  .biz-plate {
+    --biz-line: rgb(150 201 183 / 0.16);
+    --biz-warm: rgb(232 162 115 / 0.22);
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    padding-inline: 1.25rem;
+    overflow: hidden;
+    background: var(--verdigris-950);
+    cursor: pointer;
+    scroll-margin-top: 6rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .biz-index,
+  .biz-name,
+  .biz-toggle,
+  .biz-panel { position: relative; z-index: 1; }
+
+  /* Material: the plate's own texture, faded out toward the foot so the text
+     keeps a clean ground. It rises 16px into place as the plate opens. */
+  .biz-material,
+  .biz-wash { position: absolute; pointer-events: none; }
+  .biz-material {
+    inset: -16px 0;
+    opacity: 0.4;
+    transform: translateY(16px);
+    -webkit-mask-image: linear-gradient(to left, #000, transparent 70%);
+    mask-image: linear-gradient(to left, #000, transparent 70%);
+    transition: opacity 300ms var(--ease-out-quart), transform 300ms var(--ease-out-quart);
+    will-change: transform, opacity;
+  }
+  .biz-wash {
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(120% 80% at 0% 100%, rgb(192 100 48 / 0.2), transparent 65%);
+    transition: opacity 300ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-material {
+    opacity: 1;
+    transform: none;
+    transition: opacity 800ms var(--ease-out-quart), transform 900ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-wash {
+    opacity: 1;
+    transition: opacity 800ms var(--ease-out-quart);
+  }
+
+  .biz-index {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    font-variant-numeric: tabular-nums;
+    color: var(--verdigris-300);
+    transition: color 200ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-index { color: var(--copper-300); }
+
+  .biz-name {
+    margin: 0;
+    padding-block: 1.25rem;
+    font-family: var(--font-display), "Arial Narrow", sans-serif;
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: rgb(247 245 241 / 0.88);
+    transition: color 300ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-name { color: var(--paper-50); }
+
+  .biz-toggle {
+    display: flex;
+    color: var(--verdigris-300);
+    transition: transform 300ms var(--ease-out-quart), color 200ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-toggle { transform: rotate(90deg); color: var(--copper-300); }
+
+  .biz-panel {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 200ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-panel {
+    grid-template-rows: 1fr;
+    transition-duration: 520ms;
+  }
+  .biz-panel-inner { min-height: 0; overflow: hidden; }
+
+  /* The sector as a dimension line. Label first, then the line draws outward
+     from it, then the end ticks land. Leaving is one quick pass, no delays. */
+  .biz-dim { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
+  .biz-dim-label {
+    display: block;
+    flex: none;
+    overflow: hidden;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--copper-300);
+  }
+  .biz-dim-label > span {
+    display: block;
+    transform: translateY(110%);
+    transition: transform 140ms var(--ease-out-quart);
+    will-change: transform;
+  }
+  .biz-dim-line {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 1px;
+    background: var(--copper-300);
+    opacity: 0.7;
+    transform: scaleX(0);
+    transition: transform 140ms var(--ease-out-quart);
+    will-change: transform;
+  }
+  .biz-dim-line-l { transform-origin: 100% 50%; }
+  .biz-dim-line-r { transform-origin: 0% 50%; }
+  .biz-dim-tick {
+    flex: none;
+    width: 1px;
+    height: 0.75rem;
+    background: var(--copper-300);
+    transform: scaleY(0);
+    transition: transform 140ms var(--ease-out-quart);
+    will-change: transform;
+  }
+  .biz-plate[data-active="true"] .biz-dim-label > span {
+    transform: none;
+    transition: transform 560ms var(--ease-out-quart) 160ms;
+  }
+  .biz-plate[data-active="true"] .biz-dim-line {
+    transform: none;
+    transition: transform 640ms var(--ease-out-quart) 240ms;
+  }
+  .biz-plate[data-active="true"] .biz-dim-tick {
+    transform: none;
+    transition: transform 320ms var(--ease-out-quart) 600ms;
+  }
+
+  /* Text block: description, chips, CTA cascade in at 55ms intervals. */
+  .biz-body { display: flex; flex-direction: column; margin-block: 1.25rem 1.5rem; }
+  .biz-item {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 120ms var(--ease-out-quart), transform 120ms var(--ease-out-quart);
+  }
+  .biz-plate[data-active="true"] .biz-item {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 420ms var(--ease-out-quart) calc(var(--i, 0) * 55ms + 200ms),
+      transform 520ms var(--ease-out-quart) calc(var(--i, 0) * 55ms + 200ms);
+  }
+  .biz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+  .biz-chips li {
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--verdigris-700);
+    border-radius: var(--radius-tick);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(236 231 220 / 0.85);
+  }
+  .biz-cta { margin-top: 1.5rem; }
+
+  @media (min-width: 1024px) {
+    /* The columns themselves (`--biz-cols`) are set on the element with a
+       Tailwind variant: a utility outranks a component-layer rule. */
+    .biz-rail { transition: grid-template-columns 640ms var(--ease-out-quart); }
+    .biz-plate { display: block; padding-inline: 0; scroll-margin-top: 0; }
+    .biz-material {
+      -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 30%, transparent 80%);
+      mask-image: linear-gradient(to bottom, #000 0, #000 30%, transparent 80%);
+    }
+    .biz-toggle { display: none; }
+
+    .biz-index {
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      display: flex;
+      align-items: center;
+      height: 1rem;
+    }
+
+    /* Closed: the name stands at the foot of the plate, reading upward (scaled
+       to 60%, turned -90 degrees about its bottom-left corner, then shifted
+       right by its own scaled height so it sits inside the plate's padding).
+       Open: it rises by the height of the text block and turns upright. The
+       two transforms have the same shape, so the browser interpolates the turn
+       and the travel together. */
+    .biz-name {
+      position: absolute;
+      left: 1.5rem;
+      bottom: 1.5rem;
+      padding: 0;
+      font-size: clamp(2.2rem, 0.6rem + 2.6vw, 3.4rem);
+      white-space: nowrap;
+      transform-origin: 0 100%;
+      transform: translate(0.6em, 0) rotate(-90deg) scale(0.6);
+      transition: transform 640ms var(--ease-out-quart), color 300ms var(--ease-out-quart);
+      will-change: transform;
+    }
+    .biz-plate[data-active="true"] .biz-name {
+      transform: translate(0, calc(-1 * (var(--biz-body-h) + 1.25rem))) rotate(0deg) scale(1);
+    }
+
+    /* The panel overlays the plate and lets the pointer through to it; only
+       the CTA catches clicks. Its blocks are fixed-width, so they never
+       reflow while the plate is still growing. */
+    .biz-panel {
+      position: absolute;
+      inset: 0;
+      display: block;
+      pointer-events: none;
+      transition: none;
+    }
+    .biz-panel-inner { position: relative; height: 100%; overflow: visible; }
+    .biz-dim { position: absolute; top: 1.5rem; left: 4rem; right: 1.5rem; margin: 0; }
+    .biz-body {
+      position: absolute;
+      left: 1.5rem;
+      bottom: 1.5rem;
+      width: 22.5rem;
+      height: var(--biz-body-h);
+      margin: 0;
+    }
+    .biz-cta { margin-top: auto; }
+    .biz-cta > * { pointer-events: auto; }
+  }
+
+  @media (min-width: 1280px) {
+    .biz-body { width: 28rem; }
+  }
+
+  /* Materials. Each is the drawing convention of its trade, in two inks:
+     verdigris for the fine work, copper for the major lines. */
+
+  /* Wind: rays fanning up from below the plate. */
+  .biz-pattern-wind {
+    background: repeating-conic-gradient(from -32deg at 50% 118%, var(--biz-line) 0deg 1.2deg, transparent 1.2deg 8deg);
+  }
+  /* Plantation: crop rows, a copper furrow every fourth. */
+  .biz-pattern-plantation {
+    background:
+      repeating-linear-gradient(104deg, var(--biz-warm) 0 1px, transparent 1px 60px),
+      repeating-linear-gradient(104deg, var(--biz-line) 0 1px, transparent 1px 15px);
+  }
+  /* Construction: blueprint grid, major lines every 96px. */
+  .biz-pattern-construction {
+    background:
+      linear-gradient(var(--biz-warm) 1px, transparent 1px) 0 0 / 96px 96px,
+      linear-gradient(90deg, var(--biz-warm) 1px, transparent 1px) 0 0 / 96px 96px,
+      linear-gradient(var(--biz-line) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, var(--biz-line) 1px, transparent 1px) 0 0 / 24px 24px;
+  }
+  /* Real estate: contour lines of a plot of land. */
+  .biz-pattern-estate {
+    background:
+      repeating-radial-gradient(ellipse 120% 90% at 18% 112%, var(--biz-warm) 0 1px, transparent 1px 100px),
+      repeating-radial-gradient(ellipse 120% 90% at 18% 112%, var(--biz-line) 0 1px, transparent 1px 20px);
+  }
+  /* Plaza: shopfront awning stripes. */
+  .biz-pattern-plaza {
+    background:
+      repeating-linear-gradient(90deg, var(--biz-warm) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgb(150 201 183 / 0.07) 0 22px, transparent 22px 44px);
+  }
+  /* Textiles: warp in verdigris, weft in copper. */
+  .biz-pattern-textiles {
+    background:
+      repeating-linear-gradient(0deg, var(--biz-warm) 0 2px, transparent 2px 7px),
+      repeating-linear-gradient(90deg, var(--biz-line) 0 2px, transparent 2px 7px);
+  }
+  /* Steels: the 45 degree section hatch drawings use for metal. */
+  .biz-pattern-steels {
+    background:
+      repeating-linear-gradient(45deg, var(--biz-warm) 0 1px, transparent 1px 54px),
+      repeating-linear-gradient(45deg, var(--biz-line) 0 1px, transparent 1px 9px);
+  }
+
   /* Ticker edges dissolve instead of clipping hard against the viewport. */
   .ticker-mask {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
@@ -373,6 +676,28 @@
     opacity: 1;
     transition: opacity 300ms ease-out !important;
   }
+
+  /* Our Business: the plates open and close without travel (the name, the
+     columns, the panel and the texture all snap to their state); only the
+     content crossfades. The universal 0.01ms rule above covers the snapping;
+     class plus attribute selectors beat it for the crossfade. */
+  .biz-material,
+  .biz-plate[data-active="true"] .biz-material { transform: none; will-change: opacity; }
+  .biz-name,
+  .biz-plate[data-active="true"] .biz-name { will-change: auto; }
+  .biz-item,
+  .biz-dim-label > span,
+  .biz-dim-line,
+  .biz-dim-tick {
+    transform: none;
+    opacity: 0;
+    will-change: opacity;
+    transition: opacity 200ms ease-out !important;
+  }
+  .biz-plate[data-active="true"] .biz-item,
+  .biz-plate[data-active="true"] .biz-dim-label > span,
+  .biz-plate[data-active="true"] .biz-dim-tick { opacity: 1; transform: none; }
+  .biz-plate[data-active="true"] .biz-dim-line { opacity: 0.7; transform: none; }
 
   /* About: opacity fade only, no rise, line-mask or rule draw. */
   .about-line, .about-draw { transform: none; opacity: 0; will-change: opacity; }

@@ -3,6 +3,7 @@ import { Hero } from "@/components/sections/Hero";
 import { About } from "@/components/sections/About";
 import { Services } from "@/components/sections/Services";
 import { Achievements } from "@/components/sections/Achievements";
+import { Business } from "@/components/sections/Business";
 
 export default function HomePage() {
   return (
@@ -25,6 +26,7 @@ export default function HomePage() {
         </div>
         <Services />
         <Achievements />
+        <Business />
       </main>
     </>
   );

@@ -87,6 +87,47 @@ export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly st
 };
 
 /**
+ * Our Business copy (content document §6), keyed by canonical division name.
+ * The descriptions are verbatim; the document's "APM Windmill" is the canonical
+ * "APM Wind Energy" here (DESIGN.md §01 item 2). `products` is the document's
+ * product chips on the APM Steels feature row.
+ */
+export const BUSINESS_DETAILS: Record<
+  OperatingDivision["name"],
+  { description: string; products?: readonly string[] }
+> = {
+  "APM Wind Energy": {
+    description:
+      "Large-scale clean energy generation, turbine asset deployment, and power grid feeding driving regional decarbonization.",
+  },
+  "APM Plantation": {
+    description:
+      "Responsible agro-farming, sustainable crop cultivation, and biological land conservation across vast fertile estates.",
+  },
+  "APM Construction": {
+    description:
+      "Industrial civil engineering, public-private utility corridors, and resilient structural contracting executed to institutional standards.",
+  },
+  "APM Real Estate": {
+    description:
+      "Thoughtfully master-planned residential properties, strategic land banking, and modern housing communities.",
+  },
+  "APM Plaza": {
+    description:
+      "Prime retail centers, shopping complexes, and mixed-use commercial destinations generating sustained customer engagement.",
+  },
+  "APM Textiles": {
+    description:
+      "High-grade fabric manufacturing, quality yarn production, and supply chain fulfillment across domestic and international markets.",
+  },
+  "APM Steels": {
+    description:
+      "Precision structural steel distribution, specialized metal fabrication, and dependable industrial supply contracts feeding mega-scale construction projects.",
+    products: ["Structural I-Beams", "Fabricated Rebar", "High-Tensile Coils"],
+  },
+};
+
+/**
  * Achievements carousel content (content document §5). `title` is the award
  * name broken into its display lines; `label` is the short form used on the
  * carousel's progress control.
