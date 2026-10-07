@@ -3,6 +3,30 @@ export const SITE_NAME = "APM Groups of Company";
 export const SITE_DESCRIPTION = "A diversified industrial group building enduring value across energy, land, infrastructure, property, manufacturing, and materials.";
 
 /**
+ * Primary navigation, shared by the Navbar and the Footer's quick navigation
+ * (DESIGN.md §07: same labels, same hrefs). Contact is the Navbar's CTA, so it
+ * is listed separately.
+ */
+export const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "#about" },
+  { label: "Services", href: "#services" },
+  { label: "Our Achievements", href: "#achievements" },
+  { label: "Our Business", href: "#divisions" },
+  { label: "Gallery", href: "#gallery" },
+] as const;
+
+export const CONTACT_LINK = { label: "Contact", href: "#contact" } as const;
+
+/** Registered corporate office (content document §8). */
+export const CONTACT_DETAILS = {
+  entity: "APM Wind Energy and Plantation Pvt. Ltd.",
+  address: "NGL to TVL Main Road, Muppandal, Aralvoimozhi, Kanyakumari Dist, Tamilnadu - 629301",
+  website: { label: "www.apmgroups.com", href: "https://www.apmgroups.com" },
+  email: "apmgroupofcompanies@gmail.com",
+} as const;
+
+/**
  * Canonical operating-division taxonomy. Single source of truth consumed by
  * Services, Our Business, Gallery filters, and the Footer — see DESIGN.md
  * §01 item 2 and §06 for why this list (not "Windmill" / "Steel Plant" /
@@ -126,6 +150,56 @@ export const BUSINESS_DETAILS: Record<
     products: ["Structural I-Beams", "Fabricated Rebar", "High-Tensile Coils"],
   },
 };
+
+/**
+ * Gallery slides (content document §7), in operating-division order. Categories
+ * use the extended set from DESIGN.md §01 item 4 (Textiles and Commercial
+ * included); the Textiles caption is new because the document has no Textiles
+ * image, and is taken from the Services copy.
+ *
+ * PLACEHOLDER IMAGES: `src` points at seeded Picsum photos, which will not
+ * depict the captions. Replace each with a real photograph (e.g.
+ * `/images/gallery/wind-farm.jpg`) and drop `unoptimized` in Gallery.tsx; the
+ * Construction and Wind Energy sources in the live site show portal UI chrome
+ * and must not be reused (DESIGN.md §01 item 8).
+ */
+export const GALLERY_ITEMS = [
+  {
+    category: "Wind Energy",
+    caption: "Wind Farm Generation Site",
+    src: "https://picsum.photos/seed/apm-wind-farm/1200/900",
+  },
+  {
+    category: "Plantation",
+    caption: "Agro-Farming Estate",
+    src: "https://picsum.photos/seed/apm-agro-estate/1200/900",
+  },
+  {
+    category: "Construction",
+    caption: "Commercial Engineering Complex",
+    src: "https://picsum.photos/seed/apm-engineering-complex/1200/900",
+  },
+  {
+    category: "Real Estate",
+    caption: "Master-Planned Communities",
+    src: "https://picsum.photos/seed/apm-planned-community/1200/900",
+  },
+  {
+    category: "Commercial",
+    caption: "APM Plaza Retail Destination",
+    src: "https://picsum.photos/seed/apm-plaza-retail/1200/900",
+  },
+  {
+    category: "Textiles",
+    caption: "High-Specification Spinning Mill",
+    src: "https://picsum.photos/seed/apm-spinning-mill/1200/900",
+  },
+  {
+    category: "Steel",
+    caption: "Industrial Steel Logistics Hub",
+    src: "https://picsum.photos/seed/apm-steel-hub/1200/900",
+  },
+] as const;
 
 /**
  * Achievements carousel content (content document §5). `title` is the award

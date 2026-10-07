@@ -27,6 +27,12 @@
   /* How far About is held back by the end of it (distance minus the
      viewport travel it would have had at full speed). */
   --rise-extra: calc(var(--rise-distance) - (100svh - var(--ticker-h)));
+  /* The Contact panel rises over the pinned Gallery the same way About rises
+     over the hero: held back to --rise-speed of scroll speed. It enters from
+     the bottom of the viewport, so its distance is a full viewport over the
+     speed, and --rise2-extra is how far it is held back by the end. */
+  --rise2-distance: calc(100svh / var(--rise-speed));
+  --rise2-extra: calc(var(--rise2-distance) - 100svh);
   --site-gutter: clamp(20px, 4vw, 48px);
   --site-max: 1280px;
   --ease-engineered: cubic-bezier(0.16, 1, 0.3, 1);

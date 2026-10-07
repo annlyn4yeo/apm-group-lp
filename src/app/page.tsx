@@ -4,6 +4,10 @@ import { About } from "@/components/sections/About";
 import { Services } from "@/components/sections/Services";
 import { Achievements } from "@/components/sections/Achievements";
 import { Business } from "@/components/sections/Business";
+import { Gallery } from "@/components/sections/Gallery";
+import { Contact } from "@/components/sections/Contact";
+import { Footer } from "@/components/layout/Footer";
+import { PinnedTail } from "@/components/layout/PinnedTail";
 
 export default function HomePage() {
   return (
@@ -27,6 +31,31 @@ export default function HomePage() {
         <Services />
         <Achievements />
         <Business />
+
+        {/* Stage two: the Gallery is held in place (by its bottom edge) while
+            the copper Contact panel, with the footer, rises over it. The
+            wrapper is never transformed and owns the scroll timeline; the
+            panel inside it is what moves. */}
+        <div className="stage2 relative bg-verdigris-900">
+          <PinnedTail>
+            <Gallery />
+          </PinnedTail>
+
+          <div data-rise-wrap className="contact-wrap relative z-10">
+            <div
+              id="contact"
+              className="stage-contact on-copper relative bg-copper-500 text-ink-950"
+            >
+              {/* Shadow the panel casts onto the pinned Gallery as it rises. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-ink-950/45 to-transparent"
+              />
+              <Contact />
+              <Footer />
+            </div>
+          </div>
+        </div>
       </main>
     </>
   );

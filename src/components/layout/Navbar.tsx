@@ -12,6 +12,7 @@ import {
 } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CONTACT_LINK, NAV_LINKS } from "@/lib/constants";
 import {
   handleSectionLinkClick,
   useBodyScrollLock,
@@ -22,18 +23,9 @@ import { engineeredEase, springSettle, springIndicator } from "@/lib/animations"
 import { Button } from "@/components/ui/Button";
 import { Logomark } from "@/components/ui/Logomark";
 
-// Hash targets point at sections arriving in later phases (About, Services,
-// Our Achievements, Our Business / divisions, Gallery, Contact).
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Our Achievements", href: "#achievements" },
-  { label: "Our Business", href: "#divisions" },
-  { label: "Gallery", href: "#gallery" },
-] as const;
-
-const NAV_HREFS: readonly string[] = NAV_LINKS.map((link) => link.href);
+// Contact has no text link: it is the CTA button. It is still watched, so the
+// Gallery does not stay marked as current while the Contact panel covers it.
+const NAV_HREFS: readonly string[] = [...NAV_LINKS.map((link) => link.href), CONTACT_LINK.href];
 
 const SCROLL_THRESHOLD = 80;
 
@@ -70,7 +62,7 @@ export function Navbar() {
   useBodyScrollLock(menuOpen);
   useFocusTrap(menuRef, menuOpen, closeMenu);
 
-  const mobileLinks = [...NAV_LINKS, { label: "Contact", href: "#contact" }] as const;
+  const mobileLinks = [...NAV_LINKS, CONTACT_LINK] as const;
 
   // The section on screen (About, Services, ...); above the first section it
   // is the hero, so Home.
@@ -155,8 +147,13 @@ export function Navbar() {
             {/* Pointing at the CTA releases the underline back to the
                 active page; it only follows the text links. */}
             <span className="shrink-0" onPointerEnter={() => setPointed(null)}>
-              <Button href="#contact" variant="outline" size="sm">
-                Contact
+              <Button
+                href={CONTACT_LINK.href}
+                onClick={(event) => handleSectionLinkClick(event, CONTACT_LINK.href)}
+                variant="outline"
+                size="sm"
+              >
+                {CONTACT_LINK.label}
               </Button>
             </span>
           </nav>

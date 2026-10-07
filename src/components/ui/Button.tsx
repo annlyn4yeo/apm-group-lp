@@ -6,7 +6,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 import { cn } from "@/lib/utils";
 import { springSettle } from "@/lib/animations";
 
-type Variant = "primary" | "outline";
+type Variant = "primary" | "outline" | "light";
 type Size = "sm" | "md";
 
 type SharedProps = {
@@ -49,6 +49,11 @@ const variants: Record<Variant, string> = {
   primary: "border-copper-600 bg-copper-600 text-ink-950 [--sweep:#c06430] hover:border-copper-500",
   outline:
     "border-paper-50/70 border-[1.5px] bg-transparent text-paper-50 [--sweep:rgb(232_162_115/0.14)] hover:border-copper-300 hover:text-copper-300",
+  // For ink surfaces sitting on the copper Contact panel, where the primary
+  // copper-600 button would sink into the panel's own colour. copper-300 with
+  // ink text is about 9:1; the sweep turns it paper on hover.
+  light:
+    "border-copper-300 bg-copper-300 text-ink-950 [--sweep:#f7f5f1] hover:border-paper-50",
 };
 
 const sizes: Record<Size, string> = {

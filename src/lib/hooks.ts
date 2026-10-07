@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
+import { useMotionValue, useScroll, type MotionValue } from "framer-motion";
 
 /**
  * Scroll distance, in px, over which the About section finishes rising over
@@ -21,11 +22,24 @@ export function isStageAnimated(element: Element | null): boolean {
 }
 
 /**
- * Click handler for in-page section links. About is held back by a scroll-
- * linked transform, so the browser's native anchor scroll (which aims at
- * where About is *now*) lands short and the section never finishes rising.
- * When About is animated, scroll to the end of its rise instead; every other
- * link keeps native behaviour.
+ * Document scroll position at which the Contact panel has finished rising over
+ * the pinned Gallery: its wrapper (`[data-rise-wrap]`, which is never
+ * transformed) reaches the bottom of the viewport, then the panel climbs at
+ * `--rise-speed` of scroll speed, so the rise lasts `innerHeight / speed`.
+ * The same quantity as `--rise2-distance` in design-tokens.css.
+ */
+export function getContactRiseTarget(wrap: Element): number {
+  const speed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--rise-speed")) || 1;
+  const distance = window.innerHeight / speed;
+  return wrap.getBoundingClientRect().top + window.scrollY - window.innerHeight + distance;
+}
+
+/**
+ * Click handler for in-page section links. About and Contact are held back by
+ * scroll-linked transforms, so the browser's native anchor scroll (which aims
+ * at where the section is *now*) lands short and the section never finishes
+ * rising. For an animated section, scroll to the end of its rise instead;
+ * every other link keeps native behaviour.
  */
 export function handleSectionLinkClick(event: MouseEvent<HTMLElement>, href: string) {
   if (!href.startsWith("#")) return;
@@ -35,9 +49,49 @@ export function handleSectionLinkClick(event: MouseEvent<HTMLElement>, href: str
   const target = document.getElementById(href.slice(1));
   if (!target || !isStageAnimated(target)) return;
 
+  const wrap = target.closest("[data-rise-wrap]");
   event.preventDefault();
-  window.scrollTo({ top: getRiseDistance(), behavior: "smooth" });
+  window.scrollTo({ top: wrap ? getContactRiseTarget(wrap) : getRiseDistance(), behavior: "smooth" });
   history.replaceState(null, "", href);
+}
+
+/**
+ * A 0..1 motion value that follows how far an element has travelled through
+ * the viewport, measured from its real on-screen box (so it stays right when
+ * an ancestor is held back by a transform, which framer's `useScroll` target
+ * offsets are not). `progress(rect, viewportHeight)` decides what 0 and 1
+ * mean. Writes straight to a motion value, so scrolling never re-renders;
+ * `initial` (the at-rest value) until measured, so server HTML and no-JS sit
+ * at rest.
+ */
+export function useViewProgress<T extends Element>(
+  progress: (rect: DOMRect, viewportHeight: number) => number,
+  initial = 0.5,
+): [RefObject<T | null>, MotionValue<number>] {
+  const ref = useRef<T | null>(null);
+  const value = useMotionValue(initial);
+  const { scrollY } = useScroll();
+  // Latest callback without re-subscribing to scroll each render.
+  const compute = useRef(progress);
+  compute.current = progress;
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const update = () => {
+      const next = compute.current(element.getBoundingClientRect(), window.innerHeight);
+      value.set(Math.min(1, Math.max(0, next)));
+    };
+    update();
+    const stop = scrollY.on("change", update);
+    window.addEventListener("resize", update);
+    return () => {
+      stop();
+      window.removeEventListener("resize", update);
+    };
+  }, [scrollY, value]);
+
+  return [ref, value];
 }
 
 /**

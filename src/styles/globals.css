@@ -10,6 +10,12 @@
   body { margin: 0; background: var(--paper-50); color: var(--ink-950); font-family: var(--font-body), Arial, sans-serif; }
   ::selection { background: var(--copper-500); color: var(--ink-950); }
   :focus-visible { outline: 2px solid var(--copper-500); outline-offset: 4px; }
+  /* Copper focus rings disappear on the copper Contact panel. */
+  .on-copper :focus-visible { outline-color: var(--ink-950); }
+  .on-copper ::selection { background: var(--ink-950); color: var(--copper-300); }
+  /* ...and the ink enquiry sheet inside it wants the light copper. */
+  .on-copper .on-ink :focus-visible { outline-color: var(--copper-300); }
+  .on-copper .on-ink ::selection { background: var(--copper-300); color: var(--ink-950); }
 }
 
 @layer components {
@@ -616,6 +622,53 @@
     }
   }
 }
+
+/* Gallery-to-Contact cover. Same idea as the hero-to-About cover, with a
+   named view timeline in place of the root scroll timeline, because the panel
+   is not at the top of the page.
+
+   `.contact-wrap` is the panel's never-transformed wrapper and owns the
+   timeline; it starts when the wrapper's top edge reaches the bottom of the
+   screen (`cover 0`). The panel inside it is translated down by up to
+   --rise2-extra and released over --rise2-distance of scroll, so it climbs at
+   --rise-speed of the page's speed; `.stage2` gets matching bottom padding so
+   the page still ends exactly where the panel does. The Gallery is pinned by
+   its bottom edge (PinnedTail), so it stays put underneath, drifts up a
+   little, fades back and is veiled as it is covered. The timeline is scoped on
+   `.stage2` so those layers, which are not inside the wrapper, can use it.
+   Without support (Firefox today) or with reduced motion none of this applies
+   and the panel is the plain 1:1 curtain. */
+@supports (animation-timeline: view()) and (timeline-scope: --contact-rise) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stage2 {
+      timeline-scope: --contact-rise;
+      padding-bottom: var(--rise2-extra);
+    }
+    .contact-wrap { view-timeline: --contact-rise block; }
+
+    .stage-contact {
+      animation: stage-contact linear both;
+      animation-timeline: --contact-rise;
+      animation-range: cover 0px cover var(--rise2-distance);
+      will-change: transform;
+    }
+    .stage2-content {
+      animation: stage2-content linear both;
+      animation-timeline: --contact-rise;
+      animation-range: cover 0px cover var(--rise2-distance);
+      will-change: transform, opacity;
+    }
+    .stage2-dim {
+      animation: stage2-dim linear both;
+      animation-timeline: --contact-rise;
+      animation-range: cover 0px cover var(--rise2-distance);
+    }
+  }
+}
+
+@keyframes stage-contact { to { transform: translateY(var(--rise2-extra)); } }
+@keyframes stage2-content { to { transform: translateY(-5%); opacity: 0.45; } }
+@keyframes stage2-dim { to { opacity: 0.6; } }
 
 @keyframes stage-about { to { transform: translateY(var(--rise-extra)); } }
 @keyframes stage-image { to { transform: scale(1.1); } }
