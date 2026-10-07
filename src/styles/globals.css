@@ -190,6 +190,36 @@
     will-change: transform;
   }
 
+  /* Achievements slide. The arrival beat is CSS, keyed to `data-active` on
+     the slide: title lines rise through their masks, the rule draws, and the
+     category and description fade up behind them. The hidden state is only
+     restored after a delay, so a slide that is leaving never snaps back to
+     hidden while it is still on screen. */
+  .award-line { transform: translateY(110%); transition: transform 0s linear 700ms; will-change: transform; }
+  .award-rule { transform: scaleX(0); transform-origin: left; transition: transform 0s linear 700ms; will-change: transform; }
+  .award-fade { opacity: 0; transform: translateY(12px); transition: opacity 0s linear 700ms, transform 0s linear 700ms; }
+
+  [data-active="true"] .award-line {
+    transform: none;
+    transition: transform 800ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 160ms);
+  }
+  [data-active="true"] .award-rule {
+    transform: none;
+    transition: transform 1000ms var(--ease-out-quart) 320ms;
+  }
+  [data-active="true"] .award-fade {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 600ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 160ms),
+      transform 700ms var(--ease-out-quart) calc(var(--i, 0) * 80ms + 160ms);
+  }
+
+  /* No JavaScript, nothing sets data-active: show the content. */
+  @media (scripting: none) {
+    .award-line, .award-rule, .award-fade { transform: none; opacity: 1; }
+  }
+
   /* Ticker edges dissolve instead of clipping hard against the viewport. */
   .ticker-mask {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
@@ -333,6 +363,15 @@
     opacity: 1;
     transform: none;
     transition: none !important;
+  }
+
+  /* Achievements: opacity only, no mask, draw or rise. */
+  .award-line, .award-rule, .award-fade { transform: none; opacity: 0; will-change: opacity; }
+  [data-active="true"] .award-line,
+  [data-active="true"] .award-rule,
+  [data-active="true"] .award-fade {
+    opacity: 1;
+    transition: opacity 300ms ease-out !important;
   }
 
   /* About: opacity fade only, no rise, line-mask or rule draw. */

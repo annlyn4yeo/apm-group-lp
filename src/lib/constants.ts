@@ -85,3 +85,25 @@ export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly st
     "Bulk commercial orders for infrastructure projects",
   ],
 };
+
+/**
+ * Achievements carousel content (content document §5). `title` is the award
+ * name broken into its display lines; `label` is the short form used on the
+ * carousel's progress control.
+ */
+export const ACHIEVEMENTS = [
+  {
+    title: ["Master of", "Achievement Award"],
+    label: "Master of Achievement",
+    category: "Leadership Commendation",
+    description:
+      "Prestigious commendation recognizing visionary entrepreneurial excellence, institutional integrity, and transformative multi-industry enterprise impact.",
+  },
+  {
+    title: ["Millennium 2000", "Award for Green Revolution"],
+    label: "Millennium 2000",
+    category: "Environmental Excellence",
+    description:
+      "Distinguished institutional honor celebrating pioneering efforts in renewable wind energy, agricultural forestry, and ecological preservation.",
+  },
+] as const;
