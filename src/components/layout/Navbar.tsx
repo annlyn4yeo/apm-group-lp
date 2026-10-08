@@ -21,7 +21,7 @@ import {
 } from "@/lib/hooks";
 import { engineeredEase, springSettle, springIndicator } from "@/lib/animations";
 import { Button } from "@/components/ui/Button";
-import { Logomark } from "@/components/ui/Logomark";
+import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 // Contact has no text link: it is the CTA button. It is still watched, so the
@@ -95,17 +95,13 @@ export function Navbar() {
         />
 
         <div className="nav-container relative flex items-center justify-between gap-4">
+          {/* The lockup carries the name, so there is no separate wordmark:
+              the image's alt text is the link's accessible name. */}
           <Link
             href="/"
-            className="group/logo flex min-w-0 items-center gap-2 text-paper-50 transition-colors duration-direct ease-engineered hover:text-copper-300"
+            className="flex shrink-0 items-center transition-transform duration-direct ease-engineered active:scale-[0.97]"
           >
-            <Logomark className="h-5 w-5 shrink-0 text-copper-500 sm:h-6 sm:w-6" />
-            {/* Full wordmark only where there's genuine room for it (xl+);
-                below that, "APM" carries the brand without crowding the
-                nav links and Contact button against the viewport edge. */}
-            <span className="whitespace-nowrap font-display text-base font-extrabold uppercase tracking-[0.02em] sm:text-lg">
-              APM<span className="hidden xl:inline"> Groups of Company</span>
-            </span>
+            <Logo sizes="56px" priority className="h-12 w-12 md:h-14 md:w-14" />
           </Link>
 
           <nav
@@ -209,7 +205,7 @@ export function Navbar() {
                 type="button"
                 onClick={closeMenu}
                 aria-label="Close menu"
-                className="flex h-11 w-11 items-center justify-center text-paper-50"
+                className="ml-auto flex h-11 w-11 items-center justify-center text-paper-50"
               >
                 <X size={24} aria-hidden="true" />
               </button>

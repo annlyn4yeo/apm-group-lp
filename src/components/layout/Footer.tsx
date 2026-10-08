@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion, useTransform } from "framer-motion";
 import { CONTACT_LINK, NAV_LINKS, OPERATING_DIVISIONS } from "@/lib/constants";
 import { handleSectionLinkClick, useRevealOnce, useViewProgress } from "@/lib/hooks";
-import { Logomark } from "@/components/ui/Logomark";
+import { Logo } from "@/components/ui/Logo";
 
 // Reveal choreography reuses the `.about-*` classes in globals.css; each
 // element reads its stagger position from `--i`.
@@ -47,7 +47,7 @@ export function Footer() {
           className="grid gap-12 lg:grid-cols-12 lg:gap-16"
         >
           <div style={slot(0)} className="about-item lg:col-span-5">
-            <Logomark className="h-8 w-8 text-ink-950" />
+            <Logo onPanel sizes="(min-width: 1024px) 112px, 96px" className="h-24 w-24 lg:h-28 lg:w-28" />
             <p className="mt-6 font-display text-3xl font-extrabold uppercase leading-[1.02] tracking-tight sm:text-4xl">
               One Group. Multiple Industries. One Vision.
             </p>
@@ -93,7 +93,7 @@ export function Footer() {
 
         {/* The group's name as one line across the full width. It is the
             brand set large, not content, so it is hidden from assistive tech
-            (the name is already in the Logomark lockup, the nav and the legal
+            (the name is already in the Logo lockup, the nav and the legal
             bar). The line rises from below a mask as the page ends. */}
         <div aria-hidden="true" className="mt-16 overflow-hidden lg:mt-24">
           <div ref={markRef}>

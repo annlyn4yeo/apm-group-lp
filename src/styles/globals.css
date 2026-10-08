@@ -66,6 +66,14 @@
   }
   .btn-sweep:focus-visible::before { transform: scaleX(1); transform-origin: left; }
 
+  /* Brand logo (Logo.tsx). Light shows the original artwork, dark the one with
+     a paper tagline. "Not light" rather than "dark" so a missing attribute
+     falls back to dark, like the colour tokens. On the Contact panel, dark is
+     a solid ink silhouette: red letters would sink into the copper. */
+  :root:not([data-theme="light"]) .logo-art-light,
+  :root[data-theme="light"] .logo-art-dark { display: none; }
+  :root:not([data-theme="light"]) .logo-on-panel { filter: brightness(0); }
+
   /* Light switch (ThemeToggle). The knob travels the track (50px wide, 1px
      border, 3px inset, 18px knob = 24px of travel) and the O / I mark swaps
      as it goes. Everything keys off <html data-theme>, so the switch is

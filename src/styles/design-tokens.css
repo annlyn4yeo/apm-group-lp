@@ -103,6 +103,7 @@
      to ink in both themes (see `.on-copper` above), so only this ground moves. */
   --panel: var(--swatch-copper-500);
 
+
   /* Hero photograph scrims. Mobile is one flat layer; desktop is a
      left-weighted radial, strongest behind the headline and lightest at the
      far edge. */

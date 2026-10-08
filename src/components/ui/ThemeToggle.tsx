@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { setTheme, useTheme } from "@/lib/hooks";
+import { THEME_TOGGLE_VISIBLE } from "@/lib/theme";
 
 /**
  * Light switch, drawn as the power rocker on a piece of plant: a square-cut
@@ -16,6 +17,9 @@ import { setTheme, useTheme } from "@/lib/hooks";
  */
 export function ThemeToggle({ className }: { className?: string }) {
   const light = useTheme() === "light";
+
+  // Hidden, not removed: see THEME_TOGGLE_VISIBLE in lib/theme.ts.
+  if (!THEME_TOGGLE_VISIBLE) return null;
 
   return (
     <button
