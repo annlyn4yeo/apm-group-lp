@@ -31,7 +31,7 @@ const PATTERN_CLASSES = [
   "biz-pattern-plantation",
   "biz-pattern-construction",
   "biz-pattern-estate",
-  "biz-pattern-plaza",
+  "biz-pattern-hotels",
   "biz-pattern-textiles",
   "biz-pattern-steels",
 ] as const;

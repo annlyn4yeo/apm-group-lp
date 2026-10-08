@@ -14,7 +14,7 @@ import {
   useReducedMotion,
   useSpring,
 } from "framer-motion";
-import { Building2, Factory, HardHat, Shirt, Sprout, Store, Wind, type LucideIcon } from "lucide-react";
+import { Building2, Factory, HardHat, Hotel, Shirt, Sprout, Wind, type LucideIcon } from "lucide-react";
 import { OPERATING_DIVISIONS, SERVICE_CAPABILITIES } from "@/lib/constants";
 import { useRevealOnce } from "@/lib/hooks";
 
@@ -24,7 +24,7 @@ const HEADING_LINES = [
 ] as const;
 
 // One icon per canonical division, in OPERATING_DIVISIONS order.
-const SERVICE_ICONS: readonly LucideIcon[] = [Wind, Sprout, HardHat, Building2, Store, Shirt, Factory];
+const SERVICE_ICONS: readonly LucideIcon[] = [Wind, Sprout, HardHat, Building2, Hotel, Shirt, Factory];
 
 // Reveal choreography reuses the `.about-*` classes in globals.css: they are
 // generic (hidden until an ancestor sets data-revealed), and each element
@@ -286,19 +286,40 @@ export function Services() {
                     </div>
 
                     <ul className="relative mt-10 grid gap-3 lg:mt-16 lg:gap-4">
-                      {capabilities.map((capability, capabilityIndex) => (
-                        <li
-                          key={capability}
-                          style={slot(capabilityIndex + 1)}
-                          className="service-item flex items-start gap-4 font-display text-[1.65rem] font-bold uppercase leading-[1.1] tracking-tight text-paper-50 sm:text-3xl lg:text-[2.1rem]"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className="mt-[0.55em] h-px w-5 shrink-0 bg-copper-300"
-                          />
-                          {capability}
-                        </li>
-                      ))}
+                      {capabilities.map((capability, capabilityIndex) => {
+                        const title = typeof capability === "string" ? capability : capability.title;
+                        const subpoints = typeof capability === "string" ? [] : capability.subpoints;
+                        return (
+                          <li
+                            key={title}
+                            style={slot(capabilityIndex + 1)}
+                            className="service-item"
+                          >
+                            <div className="flex items-start gap-4 font-display text-[1.65rem] font-bold uppercase leading-[1.1] tracking-tight text-paper-50 sm:text-3xl lg:text-[2.1rem]">
+                              <span
+                                aria-hidden="true"
+                                className="mt-[0.55em] h-px w-5 shrink-0 bg-copper-300"
+                              />
+                              {title}
+                            </div>
+
+                            {/* Sub-points hang off the main point: indented
+                                under its text, smaller, with a thin guide. */}
+                            {subpoints.length > 0 && (
+                              <ul className="mt-4 ml-[10px] grid gap-2 border-l border-verdigris-700 pl-[30px] lg:mt-5 lg:gap-3">
+                                {subpoints.map((subpoint) => (
+                                  <li
+                                    key={subpoint}
+                                    className="font-display text-xl font-semibold uppercase leading-[1.15] tracking-tight text-paper-100/85 sm:text-2xl lg:text-[1.65rem]"
+                                  >
+                                    {subpoint}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 );

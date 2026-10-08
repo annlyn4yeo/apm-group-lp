@@ -38,7 +38,7 @@ export const OPERATING_DIVISIONS = [
   { name: "APM Plantation", tag: "Agri Cultivation" },
   { name: "APM Construction", tag: "Civil Infrastructure" },
   { name: "APM Real Estate", tag: "Property Development" },
-  { name: "APM Plaza", tag: "Retail & Commercial" },
+  { name: "APM Hotels", tag: "Hospitality" },
   { name: "APM Textiles", tag: "Advanced Spinning" },
   { name: "APM Steels", tag: "Heavy Metallurgy" },
 ] as const;
@@ -46,7 +46,7 @@ export const OPERATING_DIVISIONS = [
 /**
  * The six founding-era interests shown in About's "Diversified Operations"
  * strip (DESIGN.md §01 item 3). Deliberately not the 7-item taxonomy above:
- * APM Plaza joins later in the story.
+ * APM Hotels joins later in the story.
  */
 export const FOUNDING_INTERESTS = [
   "Wind Energy",
@@ -63,8 +63,11 @@ export type OperatingDivision = (typeof OPERATING_DIVISIONS)[number];
  * Capability lines for the Services section, keyed by canonical division name.
  * Each list is the Services table description from the content document,
  * split at its commas, so the copy is unchanged and only its shape differs.
+ * An entry can be a main point with `subpoints` listed beneath it.
  */
-export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly string[]> = {
+export type ServiceCapability = string | { title: string; subpoints: readonly string[] };
+
+export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly ServiceCapability[]> = {
   "APM Wind Energy": [
     "Clean energy generation",
     "Wind farm lifecycle management",
@@ -90,11 +93,16 @@ export const SERVICE_CAPABILITIES: Record<OperatingDivision["name"], readonly st
     "Land banking",
     "Modern housing environments",
   ],
-  "APM Plaza": [
-    "Prime retail destinations",
-    "Shopping complexes",
-    "High-footfall commercial plazas",
-    "Flexible institutional asset leasing",
+  "APM Hotels": [
+    {
+      title: "APM Hotels",
+      subpoints: [
+        "Hotel APM Grand",
+        "Hotel APM Heritage",
+        "The Delicious Restaurant",
+        "Thunders Resto Bar and Cafe",
+      ],
+    },
   ],
   "APM Textiles": [
     "High-specification spinning mills",
@@ -136,9 +144,9 @@ export const BUSINESS_DETAILS: Record<
     description:
       "Thoughtfully master-planned residential properties, strategic land banking, and modern housing communities.",
   },
-  "APM Plaza": {
+  "APM Hotels": {
     description:
-      "Prime retail centers, shopping complexes, and mixed-use commercial destinations generating sustained customer engagement.",
+      "Hotel APM Grand offers comfortable, well-appointed stays and warm hospitality.",
   },
   "APM Textiles": {
     description:
@@ -153,7 +161,7 @@ export const BUSINESS_DETAILS: Record<
 
 /**
  * Gallery slides (content document §7), in operating-division order. Categories
- * use the extended set from DESIGN.md §01 item 4 (Textiles and Commercial
+ * use the extended set from DESIGN.md §01 item 4 (Textiles and Hospitality
  * included); the Textiles caption is new because the document has no Textiles
  * image, and is taken from the Services copy.
  *
@@ -185,9 +193,9 @@ export const GALLERY_ITEMS = [
     src: "https://picsum.photos/seed/apm-planned-community/1200/900",
   },
   {
-    category: "Commercial",
-    caption: "APM Plaza Retail Destination",
-    src: "https://picsum.photos/seed/apm-plaza-retail/1200/900",
+    category: "Hospitality",
+    caption: "Hotel APM Grand",
+    src: "https://picsum.photos/seed/apm-hotel-grand/1200/900",
   },
   {
     category: "Textiles",

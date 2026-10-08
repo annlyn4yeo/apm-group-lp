@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion, useTransform } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { CONTACT_LINK, NAV_LINKS, OPERATING_DIVISIONS } from "@/lib/constants";
 import { handleSectionLinkClick, useRevealOnce, useViewProgress } from "@/lib/hooks";
 import { Logo } from "@/components/ui/Logo";
@@ -53,7 +54,7 @@ export function Footer() {
             </p>
             <p className="mt-5 max-w-[46ch] font-body text-base font-semibold leading-relaxed">
               Institutional resilience, industrial progress, and multi-sector leadership engineered
-              across renewable energy, agriculture, civil works, real estate, plaza, textiles, and
+              across renewable energy, agriculture, civil works, real estate, hotels, textiles, and
               steels.
             </p>
           </div>
@@ -122,14 +123,20 @@ export function Footer() {
             <span>Terms of Service</span>
           </p>
           <p style={slot(2)} className="about-item">
-            Developed by{" "}
+            Designed &amp; Developed by{" "}
             <a
               href="https://root-path.tech"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-display text-base font-extrabold uppercase tracking-tight underline decoration-1 underline-offset-4 transition-[text-decoration-thickness] duration-150 ease-engineered hover:decoration-2"
+              className="group relative inline-flex items-center gap-1 py-1 font-display text-base font-extrabold uppercase tracking-tight after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-ink-950 after:transition-[height] after:duration-150 after:ease-engineered hover:after:h-0.5 focus-visible:after:h-0.5"
             >
               root-path
+              <ArrowUpRight
+                size={14}
+                strokeWidth={2.25}
+                aria-hidden="true"
+                className="credit-arrow shrink-0"
+              />
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
           </p>
